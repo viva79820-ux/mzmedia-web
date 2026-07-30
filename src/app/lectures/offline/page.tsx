@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import { OfflineStudentLookup } from "@/components/OfflineStudentLookup";
 import { PageHero } from "@/components/PageHero";
 import { Reveal } from "@/components/Reveal";
 
@@ -31,8 +32,12 @@ export default function OfflineLecturePage() {
         eyebrow="Offline Lecture"
         title="대구·경북에서 만나는 현장형 워크숍"
         description="화면 밖에서도 통하는 마케팅. 질문하고, 실습하고, 바로 적용하는 오프라인 강의입니다."
-        cta={{ href: "/quote", label: "오프라인 일정 문의" }}
+        cta={{ href: "#course-lookup", label: "내 수강 정보 조회" }}
       />
+
+      <div id="course-lookup">
+        <OfflineStudentLookup />
+      </div>
 
       <section className="bg-white py-20 md:py-24">
         <div className="site-shell grid items-center gap-10 lg:grid-cols-2">
