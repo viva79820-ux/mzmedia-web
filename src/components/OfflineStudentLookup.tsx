@@ -52,15 +52,15 @@ export function OfflineStudentLookup() {
   }
 
   return (
-    <section className="border-t border-line bg-paper py-20 md:py-24">
+    <section className="bg-paper py-16 md:py-24">
       <div className="site-shell">
         <div className="max-w-2xl">
           <p className="text-xs font-semibold tracking-[0.2em] text-teal uppercase">
             My Course
           </p>
-          <h2 className="font-display mt-3 text-3xl font-bold tracking-tight text-ink md:text-4xl">
+          <h1 className="font-display mt-3 text-3xl font-bold tracking-tight text-ink md:text-4xl">
             오프라인 수강 정보 조회
-          </h2>
+          </h1>
           <p className="mt-3 text-muted">
             등록하신 성함과 전화번호를 입력하면 총 회차, 잔여 회차, 수업일을
             확인할 수 있습니다.
