@@ -63,19 +63,17 @@ export default function HomePage() {
           <p className="animate-rise font-display text-sm font-semibold tracking-[0.28em] text-white/75 uppercase md:text-base">
             {site.name}
           </p>
-          <h1 className="animate-rise animate-rise-delay-1 font-display mt-4 max-w-3xl text-5xl leading-[0.98] font-extrabold tracking-tight text-white md:text-7xl">
-            로컬 브랜드를
-            <br />
-            검색과 SNS에서
+          <h1 className="animate-rise animate-rise-delay-1 font-display mt-4 max-w-4xl text-4xl leading-[1.08] font-extrabold tracking-tight text-white md:text-6xl">
+            블로그 · 인스타그램 · 유튜브,
             <br />
             <span className="relative inline-block">
-              움직이게
+              이제 한 곳에서 한 번에!
               <span className="underline-sweep absolute -bottom-1 left-0 h-2 w-full bg-accent/90" />
             </span>
           </h1>
-          <p className="animate-rise animate-rise-delay-2 mt-6 max-w-xl text-base leading-relaxed text-white/80 md:text-lg">
-            대구·경북 비즈니스의 블로그·인스타·유튜브 마케팅을 설계하고 실행하는{" "}
-            {site.nameKo}입니다.
+          <p className="animate-rise animate-rise-delay-2 mt-6 max-w-2xl text-base leading-relaxed text-white/80 md:text-lg">
+            엠지미디어는 기업의 온라인 홍보를 위해 콘텐츠를 기획하고 제작하는
+            콘텐츠 마케팅 전문기업입니다.
           </p>
           <div className="animate-rise animate-rise-delay-3 mt-9 flex flex-wrap gap-3">
             <Link
