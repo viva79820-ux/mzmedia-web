@@ -6,14 +6,17 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { nav } from "@/lib/site";
 
+type Me = { id: string; username: string; name: string } | null;
+
 export function Header() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
-  const [lectureOpen, setLectureOpen] = useState(false);
+  const [openGroup, setOpenGroup] = useState<string | null>(null);
+  const [me, setMe] = useState<Me>(null);
 
   useEffect(() => {
     setOpen(false);
-    setLectureOpen(false);
+    setOpenGroup(null);
   }, [pathname]);
 
   useEffect(() => {
@@ -23,8 +26,29 @@ export function Header() {
     };
   }, [open]);
 
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/auth/me")
+      .then((res) => res.json())
+      .then((data: { user?: Me }) => {
+        if (!cancelled) setMe(data.user ?? null);
+      })
+      .catch(() => {
+        if (!cancelled) setMe(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [pathname]);
+
   const isActive = (href: string) =>
     href === "/" ? pathname === "/" : pathname.startsWith(href);
+
+  async function handleLogout() {
+    await fetch("/api/auth/logout", { method: "POST" });
+    setMe(null);
+    window.location.href = "/";
+  }
 
   return (
     <header className="sticky top-0 z-50 border-b border-line/70 bg-paper/85 backdrop-blur-md">
@@ -32,7 +56,7 @@ export function Header() {
         <Link href="/" className="relative z-10 flex items-center gap-2">
           <Image
             src="/brand/logo.png"
-            alt="MG MEDIA 엠지미디어"
+            alt="MZ MEDIA 엠지미디어"
             width={52}
             height={52}
             priority
@@ -42,7 +66,7 @@ export function Header() {
 
         <nav className="hidden items-center gap-1 lg:flex">
           {nav.map((item) =>
-            "children" in item && item.children ? (
+            item.children ? (
               <div key={item.href} className="relative group">
                 <Link
                   href={item.href}
@@ -61,7 +85,9 @@ export function Header() {
                         key={child.href}
                         href={child.href}
                         className={`block rounded-xl px-3 py-2.5 text-sm transition-colors hover:bg-paper ${
-                          isActive(child.href) ? "text-accent" : "text-ink-soft"
+                          pathname === child.href
+                            ? "text-accent"
+                            : "text-ink-soft"
                         }`}
                       >
                         {child.label}
@@ -86,7 +112,42 @@ export function Header() {
           )}
         </nav>
 
-        <div className="hidden items-center gap-3 lg:flex">
+        <div className="hidden items-center gap-2 lg:flex">
+          {me ? (
+            <>
+              <span className="max-w-[7rem] truncate text-sm text-muted">
+                {me.name}
+              </span>
+              <Link
+                href="/jobs/new"
+                className="rounded-full border border-line bg-white px-3.5 py-2 text-sm font-semibold text-ink transition hover:border-ink/30"
+              >
+                공고 등록
+              </Link>
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="rounded-full px-3.5 py-2 text-sm font-medium text-ink-soft hover:text-ink"
+              >
+                로그아웃
+              </button>
+            </>
+          ) : (
+            <>
+              <Link
+                href="/auth/login"
+                className="rounded-full px-3.5 py-2 text-sm font-medium text-ink-soft hover:text-ink"
+              >
+                로그인
+              </Link>
+              <Link
+                href="/auth/signup"
+                className="rounded-full border border-line bg-white px-3.5 py-2 text-sm font-semibold text-ink"
+              >
+                회원가입
+              </Link>
+            </>
+          )}
           <Link
             href="/quote"
             className="rounded-full bg-ink px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-ink-soft"
@@ -121,17 +182,21 @@ export function Header() {
         <div className="border-t border-line bg-white lg:hidden">
           <div className="site-shell flex flex-col gap-1 py-4">
             {nav.map((item) =>
-              "children" in item && item.children ? (
+              item.children ? (
                 <div key={item.href} className="flex flex-col">
                   <button
                     type="button"
                     className="flex items-center justify-between rounded-xl px-3 py-3 text-left text-base font-medium text-ink"
-                    onClick={() => setLectureOpen((v) => !v)}
+                    onClick={() =>
+                      setOpenGroup((v) => (v === item.href ? null : item.href))
+                    }
                   >
                     {item.label}
-                    <span className="text-muted">{lectureOpen ? "−" : "+"}</span>
+                    <span className="text-muted">
+                      {openGroup === item.href ? "−" : "+"}
+                    </span>
                   </button>
-                  {lectureOpen &&
+                  {openGroup === item.href &&
                     item.children.map((child) => (
                       <Link
                         key={child.href}
@@ -141,12 +206,6 @@ export function Header() {
                         {child.label}
                       </Link>
                     ))}
-                  <Link
-                    href={item.href}
-                    className="rounded-xl px-5 py-2.5 text-sm text-ink-soft"
-                  >
-                    강의 전체 보기
-                  </Link>
                 </div>
               ) : (
                 <Link
@@ -160,12 +219,46 @@ export function Header() {
                 </Link>
               ),
             )}
-            <Link
-              href="/quote"
-              className="mt-2 rounded-full bg-accent px-4 py-3 text-center text-sm font-semibold text-white"
-            >
-              견적 문의하기
-            </Link>
+            <div className="mt-3 flex flex-col gap-2 border-t border-line pt-3">
+              {me ? (
+                <>
+                  <Link
+                    href="/jobs/new"
+                    className="rounded-full bg-accent px-4 py-3 text-center text-sm font-semibold text-white"
+                  >
+                    공고 등록
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={handleLogout}
+                    className="rounded-full border border-line px-4 py-3 text-sm font-semibold text-ink"
+                  >
+                    로그아웃
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link
+                    href="/auth/login"
+                    className="rounded-full border border-line px-4 py-3 text-center text-sm font-semibold text-ink"
+                  >
+                    로그인
+                  </Link>
+                  <Link
+                    href="/auth/signup"
+                    className="rounded-full bg-accent px-4 py-3 text-center text-sm font-semibold text-white"
+                  >
+                    회원가입
+                  </Link>
+                </>
+              )}
+              <Link
+                href="/quote"
+                className="rounded-full bg-ink px-4 py-3 text-center text-sm font-semibold text-white"
+              >
+                견적 문의하기
+              </Link>
+            </div>
           </div>
         </div>
       )}

@@ -9,7 +9,7 @@ export function Footer() {
         <div>
           <Image
             src="/brand/logo.png"
-            alt="MG MEDIA 엠지미디어"
+            alt="MZ MEDIA 엠지미디어"
             width={72}
             height={72}
             className="h-16 w-16 rounded-lg bg-white object-contain p-1"

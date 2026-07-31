@@ -1,7 +1,7 @@
 export const site = {
-  name: "MG MEDIA",
+  name: "MZ MEDIA",
   nameKo: "엠지미디어",
-  tagline: "Content Marketing Specialist",
+  tagline: "MZ Generation's Marketing Zone",
   description:
     "엠지미디어는 기업의 온라인 홍보를 위해 콘텐츠를 기획하고 제작하는 콘텐츠 마케팅 전문기업입니다.",
   url: "https://www.mzmedia.co.kr",
