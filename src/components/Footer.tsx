@@ -10,9 +10,9 @@ export function Footer() {
           <Image
             src="/brand/logo.png"
             alt="MZ MEDIA 엠지미디어"
-            width={72}
-            height={72}
-            className="h-16 w-16 rounded-lg bg-white object-contain p-1"
+            width={80}
+            height={80}
+            className="h-20 w-20 rounded-lg bg-white object-contain p-1"
           />
           <p className="mt-4 max-w-sm text-sm leading-relaxed text-white/70">
             {site.tagline}
