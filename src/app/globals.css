@@ -1,18 +1,18 @@
 @import "tailwindcss";
 
 :root {
-  --ink: #10141a;
-  --ink-soft: #2a313c;
-  --muted: #5f6b78;
-  --line: #d7dde5;
-  --paper: #eef1f5;
-  --paper-deep: #e2e7ee;
+  --ink: #0f1724;
+  --ink-soft: #2a3648;
+  --muted: #5c6b7d;
+  --line: #d5dde8;
+  --paper: #f3f6fa;
+  --paper-deep: #e6ecf4;
   --white: #fbfcfe;
-  --accent: #ff4d1c;
-  --accent-deep: #d63a10;
-  --teal: #1a6b5c;
-  --teal-soft: #d8efe8;
-  --glow: rgba(255, 77, 28, 0.18);
+  --accent: #1a4aac;
+  --accent-deep: #123a85;
+  --teal: #1b3a6b;
+  --teal-soft: #e7eef8;
+  --glow: rgba(26, 74, 172, 0.18);
 }
 
 @theme inline {
@@ -48,7 +48,7 @@ body {
 }
 
 ::selection {
-  background: color-mix(in srgb, var(--accent) 28%, white);
+  background: color-mix(in srgb, var(--accent) 24%, white);
   color: var(--ink);
 }
 
@@ -82,7 +82,7 @@ img {
   position: absolute;
   inset: 0;
   z-index: 1;
-  opacity: 0.045;
+  opacity: 0.04;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 

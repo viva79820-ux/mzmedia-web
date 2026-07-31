@@ -57,7 +57,7 @@ export default function HomePage() {
           sizes="100vw"
         />
         <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(16,20,26,0.82)_0%,rgba(16,20,26,0.55)_48%,rgba(16,20,26,0.28)_100%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(255,77,28,0.22),transparent_40%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(26,74,172,0.28),transparent_42%)]" />
 
         <div className="site-shell relative z-[2] flex min-h-[min(100svh,880px)] flex-col justify-end pb-16 pt-28 md:justify-center md:pb-24 md:pt-24">
           <p className="animate-rise font-display text-sm font-semibold tracking-[0.28em] text-white/75 uppercase md:text-base">
@@ -237,7 +237,7 @@ export default function HomePage() {
       <section className="bg-white py-20 md:py-24">
         <div className="site-shell">
           <Reveal>
-            <div className="rounded-[2rem] bg-[linear-gradient(120deg,#10141a_0%,#1a6b5c_100%)] px-8 py-12 text-white md:px-12 md:py-14">
+            <div className="rounded-[2rem] bg-[linear-gradient(120deg,#0f1724_0%,#1a4aac_100%)] px-8 py-12 text-white md:px-12 md:py-14">
               <p className="font-display text-sm font-semibold tracking-[0.22em] text-white/55 uppercase">
                 Quote
               </p>

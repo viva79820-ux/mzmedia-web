@@ -9,9 +9,9 @@ type PageHeroProps = {
 
 export function PageHero({ eyebrow, title, description, cta }: PageHeroProps) {
   return (
-    <section className="noise relative overflow-hidden border-b border-line bg-[linear-gradient(135deg,#eef1f5_0%,#e2e7ee_48%,#d8efe8_100%)]">
+    <section className="noise relative overflow-hidden border-b border-line bg-[linear-gradient(135deg,#f3f6fa_0%,#e6ecf4_48%,#d9e4f5_100%)]">
       <div className="pointer-events-none absolute -right-20 top-10 h-56 w-56 rounded-full bg-accent/15 blur-3xl" />
-      <div className="pointer-events-none absolute -left-16 bottom-0 h-48 w-48 rounded-full bg-teal/20 blur-3xl" />
+      <div className="pointer-events-none absolute -left-16 bottom-0 h-48 w-48 rounded-full bg-teal/15 blur-3xl" />
       <div className="site-shell relative z-[2] py-16 md:py-20">
         <p className="animate-rise text-xs font-semibold tracking-[0.22em] text-teal uppercase">
           {eyebrow}

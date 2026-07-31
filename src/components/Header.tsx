@@ -31,11 +31,12 @@ export function Header() {
       <div className="site-shell flex h-[4.25rem] items-center justify-between gap-4">
         <Link href="/" className="relative z-10 flex items-center gap-2">
           <Image
-            src="/brand/logo.svg"
-            alt="MZ MEDIA"
-            width={168}
-            height={36}
+            src="/brand/logo.png"
+            alt="MG MEDIA 엠지미디어"
+            width={48}
+            height={48}
             priority
+            className="h-12 w-12 rounded-md object-cover"
           />
         </Link>
 

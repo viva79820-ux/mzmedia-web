@@ -1,9 +1,9 @@
 export const site = {
-  name: "MZ MEDIA",
+  name: "MG MEDIA",
   nameKo: "엠지미디어",
-  tagline: "MZ Generation's Marketing Zone",
+  tagline: "Content Marketing Specialist",
   description:
-    "대구·경북 로컬 마케팅 전문. 블로그, SNS, 유튜브로 브랜드가 실제로 움직이게 만듭니다.",
+    "엠지미디어는 기업의 온라인 홍보를 위해 콘텐츠를 기획하고 제작하는 콘텐츠 마케팅 전문기업입니다.",
   phone: "053-000-0000",
   email: "hello@mzmedia.co.kr",
   address: "대구광역시",

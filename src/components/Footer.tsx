@@ -8,16 +8,16 @@ export function Footer() {
       <div className="site-shell grid gap-10 py-14 md:grid-cols-[1.4fr_1fr_1fr]">
         <div>
           <Image
-            src="/brand/logo.svg"
-            alt="MZ MEDIA"
-            width={168}
-            height={36}
-            className="brightness-0 invert"
+            src="/brand/logo.png"
+            alt="MG MEDIA 엠지미디어"
+            width={64}
+            height={64}
+            className="h-16 w-16 rounded-lg object-cover"
           />
           <p className="mt-4 max-w-sm text-sm leading-relaxed text-white/70">
             {site.tagline}
             <br />
-            대구·경북 로컬 비즈니스의 마케팅을 설계하고 실행합니다.
+            기업의 온라인 홍보를 위한 콘텐츠를 기획하고 제작합니다.
           </p>
         </div>
 
