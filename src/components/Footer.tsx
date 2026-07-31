@@ -42,14 +42,15 @@ export function Footer() {
           </p>
           <ul className="mt-4 space-y-2.5 text-sm text-white/80">
             <li>{site.address}</li>
-            <li>
-              <a href={`mailto:${site.email}`} className="hover:text-white">
-                {site.email}
-              </a>
-            </li>
+            <li>대표 : {site.representative}</li>
             <li>
               <a href={`tel:${site.phone}`} className="hover:text-white">
                 {site.phone}
+              </a>
+            </li>
+            <li>
+              <a href={`mailto:${site.email}`} className="hover:text-white">
+                {site.email}
               </a>
             </li>
           </ul>

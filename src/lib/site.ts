@@ -5,9 +5,10 @@ export const site = {
   description:
     "엠지미디어는 기업의 온라인 홍보를 위해 콘텐츠를 기획하고 제작하는 콘텐츠 마케팅 전문기업입니다.",
   url: "https://www.mzmedia.co.kr",
-  phone: "053-000-0000",
-  email: "hello@mzmedia.co.kr",
-  address: "대구광역시",
+  phone: "010-4788-2336",
+  email: "mzm79820@gmail.com",
+  address: "대구 중구 달구벌대로 1992-16, 2층",
+  representative: "김영우",
   kakao: "#",
 } as const;
 
