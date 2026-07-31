@@ -150,7 +150,7 @@ export function Header() {
           )}
           <Link
             href="/quote"
-            className="rounded-full bg-accent px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-accent-deep"
+            className="rounded-full bg-accent px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-accent-deep hover:text-white"
           >
             견적 문의
           </Link>
@@ -254,7 +254,7 @@ export function Header() {
               )}
               <Link
                 href="/quote"
-                className="rounded-full bg-accent px-4 py-3 text-center text-sm font-semibold text-white hover:bg-accent-deep"
+                className="rounded-full bg-accent px-4 py-3 text-center text-sm font-semibold text-white hover:bg-accent-deep hover:text-white"
               >
                 견적 문의하기
               </Link>
