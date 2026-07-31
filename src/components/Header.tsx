@@ -33,10 +33,10 @@ export function Header() {
           <Image
             src="/brand/logo.png"
             alt="MG MEDIA 엠지미디어"
-            width={48}
-            height={48}
+            width={52}
+            height={52}
             priority
-            className="h-12 w-12 rounded-md object-cover"
+            className="h-12 w-12 object-contain"
           />
         </Link>
 
