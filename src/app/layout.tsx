@@ -23,11 +23,14 @@ export const metadata: Metadata = {
     template: `%s | ${site.nameKo}`,
   },
   description: site.description,
-  metadataBase: new URL("https://mzmedia.co.kr"),
+  metadataBase: new URL(site.url),
+  alternates: {
+    canonical: "/",
+  },
   openGraph: {
     title: `${site.nameKo} | ${site.name}`,
     description: site.description,
-    url: "https://mzmedia.co.kr",
+    url: site.url,
     siteName: site.nameKo,
     locale: "ko_KR",
     type: "website",

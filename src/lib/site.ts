@@ -4,16 +4,31 @@ export const site = {
   tagline: "Content Marketing Specialist",
   description:
     "엠지미디어는 기업의 온라인 홍보를 위해 콘텐츠를 기획하고 제작하는 콘텐츠 마케팅 전문기업입니다.",
+  url: "https://www.mzmedia.co.kr",
   phone: "053-000-0000",
   email: "hello@mzmedia.co.kr",
   address: "대구광역시",
   kakao: "#",
 } as const;
 
-export const nav = [
+export type NavChild = { href: string; label: string };
+export type NavItem = {
+  href: string;
+  label: string;
+  children?: readonly NavChild[];
+};
+
+export const nav: readonly NavItem[] = [
   { href: "/", label: "홈" },
-  { href: "/services", label: "서비스" },
-  { href: "/about", label: "회사소개" },
+  {
+    href: "/about",
+    label: "회사소개",
+    children: [
+      { href: "/about", label: "회사소개" },
+      { href: "/services", label: "서비스" },
+    ],
+  },
+  { href: "/jobs", label: "작업의뢰정보" },
   {
     href: "/lectures",
     label: "강의",
