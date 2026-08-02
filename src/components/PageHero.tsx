@@ -26,7 +26,7 @@ export function PageHero({ eyebrow, title, description, cta }: PageHeroProps) {
           <div className="animate-rise animate-rise-delay-3 mt-8">
             <Link
               href={cta.href}
-              className="inline-flex rounded-full bg-ink px-5 py-3 text-sm font-semibold text-white transition hover:bg-ink-soft"
+              className="inline-flex rounded-full bg-accent px-5 py-3 text-sm font-semibold text-white transition hover:bg-accent-deep hover:text-white"
             >
               {cta.label}
             </Link>

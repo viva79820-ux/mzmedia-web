@@ -1,0 +1,47 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum PostType {
+  REQUEST
+  PROMOTE
+}
+
+model User {
+  id              String   @id @default(cuid())
+  username        String   @unique
+  passwordHash    String
+  name            String
+  phone           String
+  email           String
+  privacyAgreedAt DateTime
+  createdAt       DateTime @default(now())
+  posts           Post[]
+}
+
+model Post {
+  id        String   @id @default(cuid())
+  type      PostType
+  category  String
+  title     String
+  content   String
+  budget    String?
+  location  String?
+  contact   String?
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  views     Int      @default(0)
+
+  @@index([type, createdAt])
+  @@index([category])
+  @@index([location])
+}
