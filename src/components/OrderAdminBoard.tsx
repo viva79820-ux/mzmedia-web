@@ -23,6 +23,14 @@ function parseMoney(v: string) {
   return Number.isFinite(n) ? n : 0;
 }
 
+/** Registration stamp is "YYYY-MM-DD HH:MM"; drop the date part when it matches the order date. */
+function registeredLabel(order: OrderListItem) {
+  const stamp = order.등록일시 || "";
+  if (!stamp) return "-";
+  const [datePart, timePart = ""] = stamp.split(" ");
+  return datePart === order.날짜 ? timePart : stamp.slice(5);
+}
+
 function formatSize(bytes?: number) {
   const n = Number(bytes) || 0;
   if (n < 1024) return `${n} B`;
@@ -36,6 +44,7 @@ export function OrderAdminBoard() {
   const [statusOptions, setStatusOptions] = useState<string[]>([...ORDER_STATUSES]);
   const [filter, setFilter] = useState("");
   const [status, setStatus] = useState("");
+  const [dateSort, setDateSort] = useState<"asc" | "desc" | null>(null);
   const [toast, setToast] = useState("");
   const [detailId, setDetailId] = useState<string | null>(null);
   const [detailText, setDetailText] = useState("");
@@ -70,7 +79,7 @@ export function OrderAdminBoard() {
 
   const filtered = useMemo(() => {
     const q = filter.trim().toLowerCase();
-    return orders.filter((o) => {
+    const rows = orders.filter((o) => {
       if (status && o.상태 !== status) return false;
       if (!q) return true;
       const hay = [o.거래처명, o.연락처, o["상품/서비스"], o.담당자, o.메모]
@@ -78,7 +87,17 @@ export function OrderAdminBoard() {
         .toLowerCase();
       return hay.includes(q);
     });
-  }, [orders, filter, status]);
+
+    if (!dateSort) return rows;
+
+    return [...rows].sort((a, b) => {
+      const keyA = `${a.날짜} ${a.등록일시}`;
+      const keyB = `${b.날짜} ${b.등록일시}`;
+      return dateSort === "asc"
+        ? keyA.localeCompare(keyB)
+        : keyB.localeCompare(keyA);
+    });
+  }, [orders, filter, status, dateSort]);
 
   function scheduleSave(id: string, next: OrderListItem) {
     window.clearTimeout(saveTimers.current[id]);
@@ -279,7 +298,39 @@ export function OrderAdminBoard() {
         <table className="min-w-[1480px] w-full table-fixed border-collapse text-sm">
           <thead>
             <tr className="bg-[#eef2f0] text-left text-xs font-bold text-ink-soft">
-              <th className="sticky top-0 z-[1] w-[128px] px-2 py-3">날짜</th>
+              <th className="sticky top-0 z-[1] w-[152px] px-2 py-3">
+                <div className="flex items-center gap-1.5">
+                  <span>날짜</span>
+                  <span className="flex flex-col leading-none">
+                    <button
+                      type="button"
+                      aria-label="날짜 오름차순 정렬"
+                      title="오름차순 (과거 → 최근)"
+                      onClick={() =>
+                        setDateSort((v) => (v === "asc" ? null : "asc"))
+                      }
+                      className={`text-[9px] transition ${
+                        dateSort === "asc" ? "text-teal" : "text-muted hover:text-ink"
+                      }`}
+                    >
+                      ▲
+                    </button>
+                    <button
+                      type="button"
+                      aria-label="날짜 내림차순 정렬"
+                      title="내림차순 (최근 → 과거)"
+                      onClick={() =>
+                        setDateSort((v) => (v === "desc" ? null : "desc"))
+                      }
+                      className={`text-[9px] transition ${
+                        dateSort === "desc" ? "text-teal" : "text-muted hover:text-ink"
+                      }`}
+                    >
+                      ▼
+                    </button>
+                  </span>
+                </div>
+              </th>
               <th className="sticky top-0 z-[1] w-[140px] px-2 py-3">거래처명</th>
               <th className="sticky top-0 z-[1] w-[120px] px-2 py-3">연락처</th>
               <th className="sticky top-0 z-[1] w-[160px] px-2 py-3">상품/서비스</th>
@@ -297,13 +348,16 @@ export function OrderAdminBoard() {
           <tbody>
             {filtered.map((order) => (
               <tr key={order.id} className="border-t border-line hover:bg-[#f7faf8]">
-                <td>
+                <td className="py-1">
                   <input
                     type="date"
                     value={order.날짜 || ""}
                     onChange={(e) => patchOrder(order.id, { 날짜: e.target.value })}
-                    className="h-10 w-full bg-transparent px-2 outline-none"
+                    className="h-8 w-full bg-transparent px-2 outline-none"
                   />
+                  <span className="block px-2 text-[11px] text-muted whitespace-nowrap">
+                    등록 {registeredLabel(order)}
+                  </span>
                 </td>
                 <td>
                   <input

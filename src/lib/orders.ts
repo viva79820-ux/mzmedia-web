@@ -28,6 +28,7 @@ export function formatStamp(date: Date) {
 export type OrderListItem = {
   id: string;
   날짜: string;
+  등록일시: string;
   거래처명: string;
   연락처: string;
   "상품/서비스": string;
@@ -54,11 +55,13 @@ export function toOrderListItem(order: {
   assignee: string;
   memo: string;
   hasDetail: boolean;
+  createdAt: Date;
   updatedAt: Date;
 }): OrderListItem {
   return {
     id: order.id,
     날짜: order.orderDate,
+    등록일시: formatStamp(order.createdAt),
     거래처명: order.clientName,
     연락처: order.contact,
     "상품/서비스": order.product,
