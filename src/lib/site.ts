@@ -39,4 +39,5 @@ export const nav: readonly NavItem[] = [
     ],
   },
   { href: "/quote", label: "견적안내" },
+  { href: "/admin", label: "관리자" },
 ] as const;

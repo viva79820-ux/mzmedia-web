@@ -45,3 +45,40 @@ model Post {
   @@index([category])
   @@index([location])
 }
+
+model Order {
+  id         String       @id @default(cuid())
+  orderDate  String
+  clientName String       @default("")
+  contact    String       @default("")
+  product    String       @default("")
+  quantity   Int          @default(1)
+  unitPrice  Int          @default(0)
+  amount     Int          @default(0)
+  status     String       @default("콜드콜")
+  assignee   String       @default("")
+  memo       String       @default("")
+  detailText String       @default("")
+  hasDetail  Boolean      @default(false)
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+  media      OrderMedia[]
+
+  @@index([status, updatedAt])
+  @@index([clientName])
+}
+
+model OrderMedia {
+  id           String   @id @default(cuid())
+  orderId      String
+  order        Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  kind         String
+  fileName     String
+  originalName String
+  mimeType     String
+  size         Int
+  data         Bytes
+  createdAt    DateTime @default(now())
+
+  @@index([orderId, kind])
+}
