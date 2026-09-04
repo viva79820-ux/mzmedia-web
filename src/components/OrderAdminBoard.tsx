@@ -232,12 +232,6 @@ export function OrderAdminBoard() {
     }
   }
 
-  async function logout() {
-    await fetch("/api/admin/logout", { method: "POST" });
-    router.replace("/admin");
-    router.refresh();
-  }
-
   const detailOrder = orders.find((o) => o.id === detailId);
 
   return (
@@ -248,7 +242,7 @@ export function OrderAdminBoard() {
             Order DB
           </p>
           <h1 className="mt-1 text-2xl font-bold text-ink md:text-3xl">오더 관리</h1>
-          <p className="mt-1 text-sm text-muted">관리자 전용 · 비밀번호 보호</p>
+          <p className="mt-1 text-sm text-muted">대표자 전용 · 비밀번호 보호</p>
         </div>
         <div className="flex flex-wrap gap-2">
           <input
@@ -283,13 +277,6 @@ export function OrderAdminBoard() {
             className="h-10 rounded-full border border-line bg-white px-4 text-sm font-semibold"
           >
             새로고침
-          </button>
-          <button
-            type="button"
-            onClick={() => logout().catch(() => undefined)}
-            className="h-10 rounded-full border border-line px-4 text-sm font-semibold text-ink-soft"
-          >
-            관리자 로그아웃
           </button>
         </div>
       </div>
@@ -338,11 +325,13 @@ export function OrderAdminBoard() {
               <th className="sticky top-0 z-[1] w-[140px] px-2 py-3">단가</th>
               <th className="sticky top-0 z-[1] w-[140px] px-2 py-3">금액</th>
               <th className="sticky top-0 z-[1] w-[110px] px-2 py-3">상태</th>
+              <th className="sticky top-0 z-[1] w-[52px] px-2 py-3">
+                <span className="sr-only">삭제</span>
+              </th>
               <th className="sticky top-0 z-[1] w-[90px] px-2 py-3">담당자</th>
               <th className="sticky top-0 z-[1] w-[160px] px-2 py-3">메모</th>
               <th className="sticky top-0 z-[1] w-[130px] px-2 py-3">수정일</th>
               <th className="sticky top-0 z-[1] w-[110px] px-2 py-3">세부내용</th>
-              <th className="sticky top-0 z-[1] w-[72px] px-2 py-3" />
             </tr>
           </thead>
           <tbody>
@@ -430,6 +419,33 @@ export function OrderAdminBoard() {
                     ))}
                   </select>
                 </td>
+                <td className="p-1 text-center">
+                  <button
+                    type="button"
+                    aria-label="오더 삭제"
+                    title="오더 삭제"
+                    onClick={() =>
+                      deleteOrder(order.id).catch((e) => showToast(e.message))
+                    }
+                    className="inline-grid h-8 w-8 place-items-center rounded-lg text-[#9b2c2c] transition hover:bg-[#f8e8e8] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#9b2c2c]"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      viewBox="0 0 24 24"
+                      className="h-4 w-4"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M4 7h16" />
+                      <path d="M9 7V4h6v3" />
+                      <path d="M6.5 7l1 13h9l1-13" />
+                      <path d="M10 11v5M14 11v5" />
+                    </svg>
+                  </button>
+                </td>
                 <td>
                   <input
                     type="text"
@@ -462,17 +478,6 @@ export function OrderAdminBoard() {
                     }`}
                   >
                     {order.세부내용여부 === "있음" ? "보기/수정" : "작성"}
-                  </button>
-                </td>
-                <td className="p-1">
-                  <button
-                    type="button"
-                    onClick={() =>
-                      deleteOrder(order.id).catch((e) => showToast(e.message))
-                    }
-                    className="h-8 w-full rounded-lg text-xs font-semibold text-[#9b2c2c]"
-                  >
-                    삭제
                   </button>
                 </td>
               </tr>

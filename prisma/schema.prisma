@@ -55,7 +55,7 @@ model Order {
   quantity   Int          @default(1)
   unitPrice  Int          @default(0)
   amount     Int          @default(0)
-  status     String       @default("콜드콜")
+  status     String       @default("보류")
   assignee   String       @default("")
   memo       String       @default("")
   detailText String       @default("")
@@ -81,4 +81,33 @@ model OrderMedia {
   createdAt    DateTime @default(now())
 
   @@index([orderId, kind])
+}
+
+model Worker {
+  id                String      @id @default(cuid())
+  name              String
+  hourlyWage        Int         @default(10320)
+  holidayPayEnabled Boolean     @default(true)
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+  wageMonths        WageMonth[]
+
+  @@index([name])
+}
+
+model WageMonth {
+  id                String   @id @default(cuid())
+  workerId          String
+  worker            Worker   @relation(fields: [workerId], references: [id], onDelete: Cascade)
+  year              Int
+  month             Int
+  hourlyWage        Int
+  holidayPayEnabled Boolean
+  hoursByDate       Json
+  memo              String   @default("")
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@unique([workerId, year, month])
+  @@index([year, month])
 }

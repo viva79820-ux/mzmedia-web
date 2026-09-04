@@ -19,7 +19,7 @@ export default async function AdminPage() {
       <PageHero
         eyebrow="Admin"
         title="관리자"
-        description="오더 DB 관리 화면은 비밀번호가 있는 관리자만 이용할 수 있습니다."
+        description="오더 관리와 직원 급여 산정은 비밀번호가 있는 대표자만 이용할 수 있습니다."
       />
       <section className="bg-white py-16 md:py-20">
         <div className="site-shell mx-auto max-w-md">

@@ -44,7 +44,7 @@ export async function POST(request: Request) {
         ? body.상태
         : typeof body.status === "string"
           ? body.status
-          : "콜드콜";
+          : "보류";
 
     const created = await prisma.order.create({
       data: {

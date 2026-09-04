@@ -3,8 +3,9 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
-import { nav } from "@/lib/site";
+import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
+import { nav, type NavChild, type NavItem } from "@/lib/site";
 
 type Me = { id: string; username: string; name: string } | null;
 
@@ -53,7 +54,7 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 border-b border-line/70 bg-paper/85 backdrop-blur-md">
       <div className="site-shell flex h-[4.25rem] items-center justify-between gap-4">
-        <Link href="/" className="relative z-10 flex items-center gap-2">
+        <Link href="/" className="flex items-center gap-2">
           <Image
             src="/brand/logo.png"
             alt="MZ MEDIA 엠지미디어"
@@ -67,35 +68,12 @@ export function Header() {
         <nav className="hidden items-center gap-1 lg:flex">
           {nav.map((item) =>
             item.children ? (
-              <div key={item.href} className="relative group">
-                <Link
-                  href={item.href}
-                  className={`rounded-full px-3.5 py-2 text-sm font-medium transition-colors ${
-                    isActive(item.href)
-                      ? "text-accent"
-                      : "text-ink-soft hover:text-ink"
-                  }`}
-                >
-                  {item.label}
-                </Link>
-                <div className="invisible absolute left-0 top-full pt-2 opacity-0 transition group-hover:visible group-hover:opacity-100">
-                  <div className="min-w-[10.5rem] rounded-2xl border border-line bg-white p-2 shadow-[0_16px_40px_rgba(16,20,26,0.08)]">
-                    {item.children.map((child) => (
-                      <Link
-                        key={child.href}
-                        href={child.href}
-                        className={`block rounded-xl px-3 py-2.5 text-sm transition-colors hover:bg-paper ${
-                          pathname === child.href
-                            ? "text-accent"
-                            : "text-ink-soft"
-                        }`}
-                      >
-                        {child.label}
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              </div>
+              <DesktopNavMenu
+                key={item.href}
+                item={item}
+                pathname={pathname}
+                active={isActive(item.href)}
+              />
             ) : (
               <Link
                 key={item.href}
@@ -158,7 +136,7 @@ export function Header() {
 
         <button
           type="button"
-          className="relative z-10 inline-flex h-11 w-11 items-center justify-center rounded-full border border-line bg-white lg:hidden"
+          className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-line bg-white lg:hidden"
           aria-label={open ? "메뉴 닫기" : "메뉴 열기"}
           aria-expanded={open}
           onClick={() => setOpen((v) => !v)}
@@ -184,28 +162,18 @@ export function Header() {
             {nav.map((item) =>
               item.children ? (
                 <div key={item.href} className="flex flex-col">
-                  <button
-                    type="button"
-                    className="flex items-center justify-between rounded-xl px-3 py-3 text-left text-base font-medium text-ink"
-                    onClick={() =>
-                      setOpenGroup((v) => (v === item.href ? null : item.href))
-                    }
-                  >
+                  <p className="rounded-xl px-3 py-3 text-base font-medium text-ink">
                     {item.label}
-                    <span className="text-muted">
-                      {openGroup === item.href ? "−" : "+"}
-                    </span>
-                  </button>
-                  {openGroup === item.href &&
-                    item.children.map((child) => (
-                      <Link
-                        key={child.href}
-                        href={child.href}
-                        className="rounded-xl px-5 py-2.5 text-sm text-ink-soft"
-                      >
-                        {child.label}
-                      </Link>
-                    ))}
+                  </p>
+                  {item.children.map((child) => (
+                    <Link
+                      key={child.href}
+                      href={child.href}
+                      className="rounded-xl px-5 py-2.5 text-sm text-ink-soft"
+                    >
+                      {child.label}
+                    </Link>
+                  ))}
                 </div>
               ) : (
                 <Link
@@ -263,5 +231,136 @@ export function Header() {
         </div>
       )}
     </header>
+  );
+}
+
+function DesktopNavMenu({
+  item,
+  pathname,
+  active,
+}: {
+  item: NavItem & { children: readonly NavChild[] };
+  pathname: string;
+  active: boolean;
+}) {
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const [open, setOpen] = useState(false);
+  const [box, setBox] = useState({ top: 0, left: 0 });
+  const [mounted, setMounted] = useState(false);
+  const closeTimer = useRef<number>(0);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  function place() {
+    const el = wrapRef.current;
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    const width = 200;
+    const left = Math.min(
+      Math.max(8, r.right - width),
+      window.innerWidth - width - 8,
+    );
+    setBox({ top: r.bottom + 6, left });
+  }
+
+  function show() {
+    window.clearTimeout(closeTimer.current);
+    place();
+    setOpen(true);
+  }
+
+  function hide() {
+    window.clearTimeout(closeTimer.current);
+    closeTimer.current = window.setTimeout(() => setOpen(false), 180);
+  }
+
+  useEffect(() => {
+    if (!open) return;
+    function onScroll() {
+      setOpen(false);
+    }
+    window.addEventListener("scroll", onScroll, true);
+    window.addEventListener("resize", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll, true);
+      window.removeEventListener("resize", onScroll);
+    };
+  }, [open]);
+
+  useEffect(() => {
+    return () => window.clearTimeout(closeTimer.current);
+  }, []);
+
+  const menu =
+    mounted && open
+      ? createPortal(
+          <div
+            role="menu"
+            onMouseEnter={show}
+            onMouseLeave={hide}
+            onPointerEnter={show}
+            onPointerLeave={hide}
+            style={{
+              position: "fixed",
+              top: box.top,
+              left: box.left,
+              zIndex: 9999,
+              width: 200,
+            }}
+            className="rounded-2xl border border-line bg-white p-2 shadow-[0_16px_40px_rgba(16,20,26,0.12)]"
+          >
+            {item.children.map((child) => (
+              <Link
+                key={child.href}
+                href={child.href}
+                role="menuitem"
+                className={`block rounded-xl px-3 py-2.5 text-sm whitespace-nowrap transition-colors hover:bg-paper ${
+                  pathname === child.href ||
+                  pathname.startsWith(`${child.href}/`)
+                    ? "text-accent"
+                    : "text-ink-soft"
+                }`}
+              >
+                {child.label}
+              </Link>
+            ))}
+          </div>,
+          document.body,
+        )
+      : null;
+
+  return (
+    <div
+      ref={wrapRef}
+      className="relative"
+      onMouseEnter={show}
+      onMouseLeave={hide}
+      onPointerEnter={show}
+      onPointerLeave={hide}
+    >
+      <Link
+        href={item.href}
+        aria-expanded={open}
+        aria-haspopup="menu"
+        className={`inline-flex items-center gap-1 rounded-full px-3.5 py-2 text-sm font-medium transition-colors ${
+          active ? "text-accent" : "text-ink-soft hover:text-ink"
+        }`}
+        onClick={(e) => {
+          if (item.href === "/admin") {
+            e.preventDefault();
+            if (open) hide();
+            else show();
+          }
+        }}
+      >
+        {item.label}
+        <span className="text-[10px] leading-none text-muted" aria-hidden>
+          ▾
+        </span>
+      </Link>
+      {menu}
+    </div>
   );
 }

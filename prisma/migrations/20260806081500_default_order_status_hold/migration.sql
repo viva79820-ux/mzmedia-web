@@ -1,0 +1,1 @@
+ALTER TABLE "Order" ALTER COLUMN "status" SET DEFAULT '보류';
