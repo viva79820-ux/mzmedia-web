@@ -9,6 +9,12 @@ import { nav, type NavChild, type NavItem } from "@/lib/site";
 
 type Me = { id: string; username: string; name: string } | null;
 
+function hasChildren(
+  item: NavItem,
+): item is NavItem & { children: readonly NavChild[] } {
+  return Array.isArray(item.children) && item.children.length > 0;
+}
+
 export function Header() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
@@ -67,7 +73,7 @@ export function Header() {
 
         <nav className="hidden items-center gap-1 lg:flex">
           {nav.map((item) =>
-            item.children ? (
+            hasChildren(item) ? (
               <DesktopNavMenu
                 key={item.href}
                 item={item}
@@ -160,7 +166,7 @@ export function Header() {
         <div className="border-t border-line bg-white lg:hidden">
           <div className="site-shell flex flex-col gap-1 py-4">
             {nav.map((item) =>
-              item.children ? (
+              hasChildren(item) ? (
                 <div key={item.href} className="flex flex-col">
                   <p className="rounded-xl px-3 py-3 text-base font-medium text-ink">
                     {item.label}
