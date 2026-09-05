@@ -24,7 +24,7 @@ export default function OnlineLecturePage() {
         eyebrow="Online Lecture"
         title="자리에서 끝내는 실무형 온라인 강의"
         description="바쁜 사장님과 담당자를 위해, 바로 적용 가능한 마케팅 실무를 온라인으로 압축해 드립니다."
-        cta={{ href: "/quote", label: "수강·커리큘럼 문의" }}
+        cta={{ href: "/estimate", label: "수강·커리큘럼 문의" }}
       />
 
       <section className="bg-white py-20 md:py-24">
@@ -76,7 +76,7 @@ export default function OnlineLecturePage() {
           </ol>
           <Reveal className="mt-10 flex flex-wrap gap-3">
             <Link
-              href="/quote"
+              href="/estimate"
               className="rounded-full bg-accent px-6 py-3.5 text-sm font-semibold text-white hover:bg-accent-deep"
             >
               온라인 강의 문의

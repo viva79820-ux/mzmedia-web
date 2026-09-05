@@ -1,103 +1,73 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { PageHero } from "@/components/PageHero";
-import { Reveal } from "@/components/Reveal";
+import { ProductCard } from "@/components/ProductCard";
+import { ensureCatalogSeeded } from "@/lib/catalog-db";
+import { prisma } from "@/lib/db";
 
 export const metadata: Metadata = {
   title: "서비스",
   description:
-    "블로그, SNS, 유튜브 마케팅. 대구·경북 로컬 브랜드를 위한 엠지미디어 서비스.",
+    "온라인마케팅, 영상·촬영, 홈페이지·IT, 디자인·인쇄 서비스를 한곳에서 견적받으세요.",
 };
 
-const packages = [
-  {
-    title: "블로그 마케팅",
-    summary: "검색에서 발견되고, 문의로 이어지는 콘텐츠 운영",
-    items: [
-      "업종·지역 키워드 리서치",
-      "주간 포스팅 기획 및 원고 작성",
-      "썸네일·본문 이미지 제작",
-      "상위노출 모니터링 및 월간 리포트",
-    ],
-  },
-  {
-    title: "SNS 마케팅",
-    summary: "브랜드 톤을 고정하고, 팔로워와 반응을 키우는 운영",
-    items: [
-      "계정 진단 및 콘텐츠 톤 가이드",
-      "피드·릴스·스토리 콘텐츠 제작",
-      "해시태그·발행 루틴 설계",
-      "댓글·DM 반응 관리 지원",
-    ],
-  },
-  {
-    title: "유튜브 마케팅",
-    summary: "기획부터 편집까지, 신뢰형 영상 채널 구축",
-    items: [
-      "채널 콘셉트·시리즈 기획",
-      "콘티 작성 및 촬영 디렉팅",
-      "편집·자막·썸네일 제작",
-      "업로드 전략 및 성장 리포트",
-    ],
-  },
-];
+export const dynamic = "force-dynamic";
 
-export default function ServicesPage() {
+export default async function ServicesHubPage() {
+  await ensureCatalogSeeded();
+  const categories = await prisma.serviceCategory.findMany({
+    where: { published: true, parentId: null },
+    orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
+    include: {
+      products: {
+        where: { published: true },
+        orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
+        take: 3,
+      },
+      _count: { select: { products: true } },
+      children: {
+        where: { published: true },
+        include: { _count: { select: { products: true } } },
+      },
+    },
+  });
+
   return (
     <>
       <PageHero
         eyebrow="Services"
-        title="채널별 역할이 다른 마케팅을, 한팀에서"
-        description="검색은 블로그, 관계는 SNS, 신뢰는 유튜브. 엠지미디어는 로컬 비즈니스에 맞는 채널 조합으로 실행합니다."
-        cta={{ href: "/quote", label: "맞춤 견적 받기" }}
+        title="필요한 서비스를 선택하세요"
+        description="마케팅·영상·홈페이지·디자인·인쇄까지, 상품을 고르고 예상 견적을 확인한 뒤 문의할 수 있습니다."
+        cta={{ href: "/estimate", label: "빠른 견적받기" }}
       />
-
-      <section className="bg-white py-20 md:py-24">
-        <div className="site-shell space-y-16">
-          {packages.map((pkg, index) => (
-            <Reveal key={pkg.title} delay={Math.min(index + 1, 3) as 1 | 2 | 3}>
-              <article className="grid gap-8 border-t border-line pt-10 lg:grid-cols-[0.9fr_1.1fr]">
-                <div>
-                  <p className="font-display text-sm font-bold tracking-[0.18em] text-accent">
-                    0{index + 1}
-                  </p>
-                  <h2 className="font-display mt-3 text-3xl font-bold text-ink">
-                    {pkg.title}
-                  </h2>
-                  <p className="mt-3 text-muted">{pkg.summary}</p>
-                </div>
-                <ul className="grid gap-3 sm:grid-cols-2">
-                  {pkg.items.map((item) => (
-                    <li
-                      key={item}
-                      className="rounded-2xl border border-line bg-paper px-4 py-4 text-sm text-ink-soft"
-                    >
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-              </article>
-            </Reveal>
-          ))}
-        </div>
-      </section>
-
-      <section className="border-t border-line bg-paper py-16">
-        <div className="site-shell flex flex-col items-start justify-between gap-6 md:flex-row md:items-center">
-          <div>
-            <h2 className="font-display text-2xl font-bold text-ink md:text-3xl">
-              어떤 조합이 맞을지 모르겠다면
-            </h2>
-            <p className="mt-2 text-muted">
-              업종과 목표만 알려주셔도, 우선순위 채널을 함께 정해 드립니다.
-            </p>
-          </div>
-          <Link
-            href="/quote"
-            className="rounded-full bg-accent px-6 py-3.5 text-sm font-semibold text-white hover:bg-accent-deep"
-          >
-            견적안내로 이동
-          </Link>
+      <section className="bg-white py-16 md:py-20">
+        <div className="site-shell grid gap-6 md:grid-cols-2">
+          {categories.map((category) => {
+            const productCount =
+              category._count.products +
+              category.children.reduce(
+                (sum, child) => sum + child._count.products,
+                0,
+              );
+            return (
+              <Link
+                key={category.id}
+                href={`/services/${category.slug}`}
+                className="rounded-[1.5rem] border border-line bg-paper p-6 transition hover:border-accent/40"
+              >
+                <p className="text-xs font-semibold tracking-[0.18em] text-teal uppercase">
+                  Category
+                </p>
+                <h2 className="mt-2 font-display text-2xl font-bold text-ink">
+                  {category.name}
+                </h2>
+                <p className="mt-2 text-sm text-muted">{category.description}</p>
+                <p className="mt-4 text-sm font-semibold text-accent">
+                  상품 {productCount}개 보기 →
+                </p>
+              </Link>
+            );
+          })}
         </div>
       </section>
     </>

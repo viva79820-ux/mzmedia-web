@@ -113,7 +113,7 @@ export default function AboutPage() {
           </div>
           <Reveal className="mt-12">
             <Link
-              href="/quote"
+              href="/estimate"
               className="inline-flex rounded-full bg-ink px-6 py-3.5 text-sm font-semibold text-white hover:bg-ink-soft"
             >
               협업 문의하기

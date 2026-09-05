@@ -12,6 +12,11 @@ const nextConfig: NextConfig = {
         destination: "https://www.mzmedia.co.kr/:path*",
         permanent: true,
       },
+      {
+        source: "/quote",
+        destination: "/estimate",
+        permanent: true,
+      },
     ];
   },
 };

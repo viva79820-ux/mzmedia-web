@@ -133,10 +133,10 @@ export function Header() {
             </>
           )}
           <Link
-            href="/quote"
+            href="/estimate"
             className="rounded-full bg-accent px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-accent-deep hover:text-white"
           >
-            견적 문의
+            빠른 견적
           </Link>
         </div>
 
@@ -227,10 +227,10 @@ export function Header() {
                 </>
               )}
               <Link
-                href="/quote"
+                href="/estimate"
                 className="rounded-full bg-accent px-4 py-3 text-center text-sm font-semibold text-white hover:bg-accent-deep hover:text-white"
               >
-                견적 문의하기
+                빠른 견적받기
               </Link>
             </div>
           </div>

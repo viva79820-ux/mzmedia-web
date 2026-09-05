@@ -111,3 +111,79 @@ model WageMonth {
   @@unique([workerId, year, month])
   @@index([year, month])
 }
+
+enum SaleMode {
+  FIXED
+  AUTO
+  CONSULT
+}
+
+model ServiceCategory {
+  id          String           @id @default(cuid())
+  slug        String           @unique
+  name        String
+  description String           @default("")
+  sortOrder   Int              @default(0)
+  published   Boolean          @default(true)
+  parentId    String?
+  parent      ServiceCategory? @relation("CategoryTree", fields: [parentId], references: [id])
+  children    ServiceCategory[] @relation("CategoryTree")
+  products    ServiceProduct[]
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  @@index([published, sortOrder])
+}
+
+model ServiceProduct {
+  id              String          @id @default(cuid())
+  categoryId      String
+  category        ServiceCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  slug            String
+  name            String
+  summary         String          @default("")
+  description     String          @default("")
+  thumbnailUrl    String          @default("")
+  saleMode        SaleMode        @default(CONSULT)
+  startingPrice   Int?
+  durationLabel   String          @default("")
+  scopeItems      Json            @default("[]")
+  clientMaterials Json            @default("[]")
+  revisionCount   String          @default("")
+  processSteps    Json            @default("[]")
+  faqItems        Json            @default("[]")
+  estimateRule    Json            @default("{}")
+  published       Boolean         @default(true)
+  sortOrder       Int             @default(0)
+  metaTitle       String          @default("")
+  metaDescription String          @default("")
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  inquiries       EstimateInquiry[]
+
+  @@unique([categoryId, slug])
+  @@index([published, sortOrder])
+  @@index([saleMode])
+}
+
+model EstimateInquiry {
+  id               String          @id @default(cuid())
+  productId        String?
+  product          ServiceProduct? @relation(fields: [productId], references: [id], onDelete: SetNull)
+  companyName      String
+  contactName      String
+  phone            String
+  email            String
+  serviceName      String          @default("")
+  budgetLabel      String          @default("")
+  dueDate          String          @default("")
+  message          String          @default("")
+  privacyAgreedAt  DateTime
+  estimateSnapshot Json            @default("{}")
+  status           String          @default("신규")
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  @@index([createdAt])
+  @@index([status])
+}

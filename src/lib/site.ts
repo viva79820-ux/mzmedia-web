@@ -26,9 +26,21 @@ export const nav: readonly NavItem[] = [
     label: "회사소개",
     children: [
       { href: "/about", label: "회사소개" },
-      { href: "/services", label: "서비스" },
+      { href: "/guide", label: "이용방법" },
     ],
   },
+  {
+    href: "/services",
+    label: "서비스",
+    children: [
+      { href: "/services", label: "전체 서비스" },
+      { href: "/services/online-marketing", label: "온라인마케팅" },
+      { href: "/services/video", label: "영상·촬영" },
+      { href: "/services/web-it", label: "홈페이지·IT" },
+      { href: "/services/design-print", label: "디자인·인쇄" },
+    ],
+  },
+  { href: "/estimate", label: "빠른 견적" },
   { href: "/jobs", label: "작업의뢰정보" },
   {
     href: "/lectures",
@@ -38,12 +50,13 @@ export const nav: readonly NavItem[] = [
       { href: "/lectures/offline", label: "오프라인 강의" },
     ],
   },
-  { href: "/quote", label: "견적안내" },
   {
     href: "/admin",
     label: "관리자",
     children: [
       { href: "/admin/orders", label: "오더 관리" },
+      { href: "/admin/products", label: "상품 관리" },
+      { href: "/admin/inquiries", label: "견적 문의" },
       { href: "/admin/wages", label: "직원 급여 산정" },
     ],
   },
