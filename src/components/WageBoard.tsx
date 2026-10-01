@@ -34,6 +34,7 @@ export function WageBoard({
   const [month, setMonth] = useState(initialMonth);
   const [name, setName] = useState("");
   const [hourlyWage, setHourlyWage] = useState(DEFAULT_HOURLY_WAGE);
+  const [wageDraft, setWageDraft] = useState(money(DEFAULT_HOURLY_WAGE));
   const [holidayPayEnabled, setHolidayPayEnabled] = useState(true);
   const [hoursByDate, setHoursByDate] = useState<HoursByDate>({});
   const [memo, setMemo] = useState("");
@@ -60,6 +61,7 @@ export function WageBoard({
     setWorkerId(worker.id);
     setName(worker.name);
     setHourlyWage(sheet.hourlyWage);
+    setWageDraft(money(sheet.hourlyWage));
     setHolidayPayEnabled(sheet.holidayPayEnabled);
     setHoursByDate(asHoursMap(sheet.hoursByDate));
     setMemo(sheet.memo || "");
@@ -229,6 +231,12 @@ export function WageBoard({
     showToast("삭제되었습니다.");
   }
 
+  function commitWage(raw: string) {
+    const value = parseMoney(raw);
+    setHourlyWage(value);
+    setWageDraft(money(value));
+  }
+
   function setDayHours(ymd: string, hours: number) {
     setHoursByDate((prev) => {
       const next = { ...prev };
@@ -347,6 +355,26 @@ export function WageBoard({
                   className="h-10 min-w-[8rem] rounded-2xl border border-line bg-paper px-3 text-base font-bold outline-none focus:border-teal"
                   aria-label="직원 이름"
                 />
+                <label className="inline-flex items-center gap-2 rounded-full border border-line bg-paper px-3 py-1.5 text-sm font-semibold">
+                  <span>적용시급</span>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    aria-label="적용시급"
+                    value={wageDraft}
+                    onChange={(e) => setWageDraft(e.target.value)}
+                    onFocus={(e) => {
+                      setWageDraft(String(hourlyWage || ""));
+                      e.currentTarget.select();
+                    }}
+                    onBlur={(e) => commitWage(e.currentTarget.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") e.currentTarget.blur();
+                    }}
+                    className="h-8 w-[7.5rem] rounded-full border border-line bg-white px-3 text-right tabular-nums outline-none focus:border-teal"
+                  />
+                  <span className="text-xs font-medium text-muted">원</span>
+                </label>
                 <label className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-line bg-paper px-3 py-2 text-sm font-semibold">
                   <input
                     type="checkbox"
@@ -494,18 +522,17 @@ export function WageBoard({
                           type="text"
                           inputMode="numeric"
                           aria-label="적용시급"
-                          defaultValue={money(hourlyWage)}
-                          key={`${workerId}-${year}-${month}-${hourlyWage}`}
+                          value={wageDraft}
+                          onChange={(e) => setWageDraft(e.target.value)}
                           onFocus={(e) => {
-                            e.currentTarget.value = String(hourlyWage || "");
+                            setWageDraft(String(hourlyWage || ""));
                             e.currentTarget.select();
                           }}
-                          onBlur={(e) => {
-                            const value = parseMoney(e.currentTarget.value);
-                            e.currentTarget.value = money(value);
-                            setHourlyWage(value);
+                          onBlur={(e) => commitWage(e.currentTarget.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") e.currentTarget.blur();
                           }}
-                          className="h-10 w-full bg-transparent text-right font-bold tabular-nums outline-none"
+                          className="h-10 w-full rounded-lg border border-transparent bg-white px-2 text-right font-bold tabular-nums outline-none focus:border-teal"
                         />
                       </td>
                     </tr>
