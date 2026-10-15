@@ -129,6 +129,8 @@ export async function PATCH(request: Request, ctx: Ctx) {
             name: full.title,
             status: "CONTRACTED",
             contractAmount: full.expectedAmount ?? 0,
+            serviceCategory: full.desiredService || "",
+            channelSource: full.source,
             startDate: new Date().toISOString().slice(0, 10),
             memo: full.memo,
             updatedById: staff.id,

@@ -29,6 +29,59 @@ export function canManageFinance(staff: SessionStaff) {
   );
 }
 
+export function canManageQuotes(staff: SessionStaff) {
+  return (
+    staff.role === "SUPER_ADMIN" ||
+    staff.role === "MANAGER" ||
+    staff.role === "EMPLOYEE"
+  );
+}
+
+export function canSeeReports(staff: SessionStaff) {
+  return canManageFinance(staff);
+}
+
+/** Freelancers only see assigned tasks/projects. */
+export function isFreelancer(staff: SessionStaff) {
+  return staff.role === "FREELANCER";
+}
+
+export const QUOTE_STATUS_LABEL = {
+  DRAFT: "작성중",
+  SENT: "발송",
+  ACCEPTED: "수락",
+  REJECTED: "거절",
+  SUPERSEDED: "이전버전",
+} as const;
+
+export const CONTRACT_STATUS_LABEL = {
+  DRAFT: "작성중",
+  ACTIVE: "진행",
+  COMPLETED: "완료",
+  CANCELLED: "취소",
+} as const;
+
+export const COST_CATEGORIES = [
+  "인건비",
+  "외주비",
+  "광고비",
+  "촬영비",
+  "개발비",
+  "기타",
+] as const;
+
+export const SERVICE_CATEGORIES = [
+  "홈페이지",
+  "앱개발",
+  "웹개발",
+  "웹앱",
+  "AI 자동화",
+  "영상",
+  "바이럴마케팅",
+  "디자인",
+  "기타",
+] as const;
+
 export const LEAD_STAGE_LABEL = {
   LEAD: "잠재고객",
   CONTACT: "접촉",

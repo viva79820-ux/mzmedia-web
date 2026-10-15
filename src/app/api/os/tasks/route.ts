@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type { TaskPriority, TaskStatus } from "@/generated/prisma/client";
 import { prisma } from "@/lib/db";
-import { canSeeAllRecords, todayKey } from "@/lib/os";
+import { canSeeAllRecords, isFreelancer, todayKey } from "@/lib/os";
 import { requireStaff } from "@/lib/staff-auth";
 
 export const runtime = "nodejs";
@@ -23,7 +23,7 @@ export async function GET(request: Request) {
     const url = new URL(request.url);
     const scope = url.searchParams.get("scope") ?? "mine";
     const where =
-      scope === "all" && canSeeAllRecords(staff)
+      scope === "all" && canSeeAllRecords(staff) && !isFreelancer(staff)
         ? {}
         : { assigneeId: staff.id };
 

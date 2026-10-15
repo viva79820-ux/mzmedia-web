@@ -20,17 +20,23 @@ const navItems: {
   roles?: StaffRole[];
 }[] = [
   { href: "/os/dashboard", label: "대시보드", roles: ["SUPER_ADMIN", "MANAGER", "ACCOUNTING"] },
+  { href: "/os/notifications", label: "알림" },
   { href: "/os/tasks", label: "내 업무" },
-  { href: "/os/leads", label: "영업" },
-  { href: "/os/customers", label: "고객" },
+  { href: "/os/leads", label: "영업", roles: ["SUPER_ADMIN", "MANAGER", "EMPLOYEE"] },
+  { href: "/os/customers", label: "고객", roles: ["SUPER_ADMIN", "MANAGER", "EMPLOYEE", "ACCOUNTING"] },
+  { href: "/os/quotes", label: "견적", roles: ["SUPER_ADMIN", "MANAGER", "EMPLOYEE"] },
+  { href: "/os/contracts", label: "계약", roles: ["SUPER_ADMIN", "MANAGER", "EMPLOYEE", "ACCOUNTING"] },
   { href: "/os/projects", label: "프로젝트" },
-  { href: "/os/recurring", label: "반복업무" },
+  { href: "/os/recurring", label: "반복업무", roles: ["SUPER_ADMIN", "MANAGER", "EMPLOYEE"] },
   { href: "/os/finance/payments", label: "매출·입금", roles: ["SUPER_ADMIN", "MANAGER", "ACCOUNTING"] },
+  { href: "/os/finance/costs", label: "비용·원가", roles: ["SUPER_ADMIN", "MANAGER", "ACCOUNTING"] },
+  { href: "/os/reports", label: "경영 리포트", roles: ["SUPER_ADMIN", "MANAGER", "ACCOUNTING"] },
+  { href: "/os/files", label: "파일·자료" },
   { href: "/os/staff", label: "직원", roles: ["SUPER_ADMIN", "MANAGER"] },
-  { href: "/os/legacy/orders", label: "레거시 오더" },
-  { href: "/os/catalog", label: "상품 카탈로그" },
+  { href: "/os/legacy/orders", label: "레거시 오더", roles: ["SUPER_ADMIN", "MANAGER"] },
+  { href: "/os/catalog", label: "상품 카탈로그", roles: ["SUPER_ADMIN", "MANAGER"] },
   { href: "/os/wages", label: "급여", roles: ["SUPER_ADMIN", "MANAGER", "ACCOUNTING"] },
-];
+]
 
 export function OsShell({
   staff,

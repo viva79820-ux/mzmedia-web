@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type { ProjectStatus } from "@/generated/prisma/client";
 import { prisma } from "@/lib/db";
-import { canSeeAllRecords } from "@/lib/os";
+import { canSeeAllRecords, isFreelancer } from "@/lib/os";
 import { requireStaff } from "@/lib/staff-auth";
 
 export const runtime = "nodejs";
@@ -28,9 +28,15 @@ export async function GET() {
   try {
     const staff = await requireStaff();
     const projects = await prisma.project.findMany({
-      where: canSeeAllRecords(staff)
-        ? undefined
-        : { members: { some: { staffId: staff.id } } },
+      where:
+        canSeeAllRecords(staff) && !isFreelancer(staff)
+          ? undefined
+          : {
+              OR: [
+                { members: { some: { staffId: staff.id } } },
+                { tasks: { some: { assigneeId: staff.id } } },
+              ],
+            },
       orderBy: { updatedAt: "desc" },
       include: {
         customer: true,
@@ -67,6 +73,8 @@ export async function POST(request: Request) {
         name,
         status,
         contractAmount: Number(body.contractAmount ?? 0) || 0,
+        serviceCategory: String(body.serviceCategory ?? ""),
+        channelSource: String(body.channelSource ?? ""),
         startDate: String(body.startDate ?? ""),
         dueDate: String(body.dueDate ?? ""),
         progress: Number(body.progress ?? 0) || 0,

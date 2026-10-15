@@ -274,6 +274,29 @@ enum PaymentStatus {
   CANCELLED
 }
 
+enum QuoteStatus {
+  DRAFT
+  SENT
+  ACCEPTED
+  REJECTED
+  SUPERSEDED
+}
+
+enum ContractStatus {
+  DRAFT
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+enum NotificationKind {
+  DUE_PROJECT
+  OVERDUE_PAYMENT
+  NEXT_CONTACT
+  TASK_DUE
+  GENERAL
+}
+
 model Staff {
   id           String     @id @default(cuid())
   username     String     @unique
@@ -296,6 +319,10 @@ model Staff {
   recurringInstances RecurringInstance[]
   updatedLeads     Lead[]            @relation("LeadUpdatedBy")
   updatedProjects  Project[]         @relation("ProjectUpdatedBy")
+  quotesCreated    Quote[]           @relation("QuoteCreator")
+  contractsCreated Contract[]        @relation("ContractCreator")
+  notifications    OsNotification[]
+  filesUploaded    FileAsset[]       @relation("FileUploader")
 
   @@index([role, active])
 }
@@ -313,6 +340,9 @@ model Customer {
   leads      Lead[]
   projects   Project[]
   inquiries  EstimateInquiry[]
+  quotes     Quote[]
+  contracts  Contract[]
+  files      FileAsset[]
 
   @@index([companyName])
   @@index([phone])
@@ -342,6 +372,9 @@ model Lead {
 
   activities LeadActivity[]
   inquiries  EstimateInquiry[]
+  quotes     Quote[]
+  contracts  Contract[]
+  files      FileAsset[]
 
   @@index([stage, updatedAt])
   @@index([ownerId])
@@ -368,6 +401,8 @@ model Project {
   name           String
   status         ProjectStatus @default(CONTRACTED)
   contractAmount Int           @default(0)
+  serviceCategory String       @default("")
+  channelSource   String       @default("")
   startDate      String        @default("")
   dueDate        String        @default("")
   deliveredAt    String        @default("")
@@ -378,14 +413,18 @@ model Project {
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
 
-  lead     Lead?
-  members  ProjectMember[]
-  tasks    Task[]
-  payments Payment[]
-  costs    CostItem[]
+  lead      Lead?
+  members   ProjectMember[]
+  tasks     Task[]
+  payments  Payment[]
+  costs     CostItem[]
+  contracts Contract[]
+  files     FileAsset[]
 
   @@index([status, dueDate])
   @@index([customerId])
+  @@index([serviceCategory])
+  @@index([channelSource])
 }
 
 model ProjectMember {
@@ -500,4 +539,107 @@ model OsSetting {
   key       String   @unique
   value     String
   updatedAt DateTime @updatedAt
+}
+
+model Quote {
+  id          String      @id @default(cuid())
+  customerId  String
+  customer    Customer    @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  leadId      String?
+  lead        Lead?       @relation(fields: [leadId], references: [id], onDelete: SetNull)
+  title       String
+  version     Int         @default(1)
+  parentId    String?
+  parent      Quote?      @relation("QuoteVersions", fields: [parentId], references: [id], onDelete: SetNull)
+  children    Quote[]     @relation("QuoteVersions")
+  amount      Int         @default(0)
+  status      QuoteStatus @default(DRAFT)
+  validUntil  String      @default("")
+  lineItems   Json        @default("[]")
+  notes       String      @default("")
+  createdById String?
+  createdBy   Staff?      @relation("QuoteCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  contracts Contract[]
+  files     FileAsset[]
+
+  @@index([customerId, updatedAt])
+  @@index([leadId])
+  @@index([status])
+}
+
+model Contract {
+  id             String         @id @default(cuid())
+  customerId     String
+  customer       Customer       @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  leadId         String?
+  lead           Lead?          @relation(fields: [leadId], references: [id], onDelete: SetNull)
+  projectId      String?
+  project        Project?       @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  quoteId        String?
+  quote          Quote?         @relation(fields: [quoteId], references: [id], onDelete: SetNull)
+  title          String
+  contractAmount Int            @default(0)
+  contractDate   String         @default("")
+  status         ContractStatus @default(DRAFT)
+  depositAmount  Int            @default(0)
+  milestoneAmount Int           @default(0)
+  finalAmount    Int            @default(0)
+  depositDue     String         @default("")
+  milestoneDue   String         @default("")
+  finalDue       String         @default("")
+  documentUrl    String         @default("")
+  memo           String         @default("")
+  createdById    String?
+  createdBy      Staff?         @relation("ContractCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  files FileAsset[]
+
+  @@index([customerId, updatedAt])
+  @@index([projectId])
+  @@index([status])
+}
+
+model FileAsset {
+  id           String    @id @default(cuid())
+  name         String
+  url          String
+  mimeType     String    @default("")
+  size         Int       @default(0)
+  customerId   String?
+  customer     Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  leadId       String?
+  lead         Lead?     @relation(fields: [leadId], references: [id], onDelete: SetNull)
+  projectId    String?
+  project      Project?  @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  quoteId      String?
+  quote        Quote?    @relation(fields: [quoteId], references: [id], onDelete: SetNull)
+  contractId   String?
+  contract     Contract? @relation(fields: [contractId], references: [id], onDelete: SetNull)
+  uploadedById String?
+  uploadedBy   Staff?    @relation("FileUploader", fields: [uploadedById], references: [id], onDelete: SetNull)
+  createdAt    DateTime  @default(now())
+
+  @@index([projectId])
+  @@index([customerId])
+  @@index([contractId])
+}
+
+model OsNotification {
+  id        String           @id @default(cuid())
+  staffId   String?
+  staff     Staff?           @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  kind      NotificationKind @default(GENERAL)
+  title     String
+  body      String           @default("")
+  href      String           @default("")
+  readAt    DateTime?
+  createdAt DateTime         @default(now())
+
+  @@index([staffId, createdAt])
+  @@index([kind, createdAt])
 }

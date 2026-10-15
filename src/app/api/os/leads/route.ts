@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type { LeadSource, LeadStage } from "@/generated/prisma/client";
 import { prisma } from "@/lib/db";
-import { canSeeAllRecords } from "@/lib/os";
+import { canSeeAllRecords, isFreelancer } from "@/lib/os";
 import { requireStaff } from "@/lib/staff-auth";
 
 export const runtime = "nodejs";
@@ -42,6 +42,9 @@ function fail(error: unknown) {
 export async function GET() {
   try {
     const staff = await requireStaff();
+    if (isFreelancer(staff)) {
+      return NextResponse.json({ leads: [] });
+    }
     const leads = await prisma.lead.findMany({
       where: canSeeAllRecords(staff) ? undefined : { ownerId: staff.id },
       orderBy: { updatedAt: "desc" },
