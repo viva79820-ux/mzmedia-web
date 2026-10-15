@@ -1,5 +1,7 @@
 import { cookies } from "next/headers";
 import { SignJWT, jwtVerify } from "jose";
+import { getSessionStaff } from "@/lib/staff-auth";
+import { isManagerPlus } from "@/lib/os";
 
 export const ADMIN_COOKIE = "mz_admin";
 const ADMIN_DAYS = 7;
@@ -63,8 +65,14 @@ export async function clearAdminCookie() {
 export async function isAdminAuthed(): Promise<boolean> {
   const cookieStore = await cookies();
   const token = cookieStore.get(ADMIN_COOKIE)?.value;
-  if (!token) return false;
-  return verifyAdminToken(token);
+  if (token && (await verifyAdminToken(token))) return true;
+
+  // MZ MEDIA OS staff can access legacy admin APIs/pages
+  const staff = await getSessionStaff();
+  if (staff && (isManagerPlus(staff.role) || staff.role === "ACCOUNTING")) {
+    return true;
+  }
+  return false;
 }
 
 export async function requireAdmin() {

@@ -50,14 +50,4 @@ export const nav: readonly NavItem[] = [
       { href: "/lectures/offline", label: "오프라인 강의" },
     ],
   },
-  {
-    href: "/admin",
-    label: "관리자",
-    children: [
-      { href: "/admin/orders", label: "오더 관리" },
-      { href: "/admin/products", label: "상품 관리" },
-      { href: "/admin/inquiries", label: "견적 문의" },
-      { href: "/admin/wages", label: "직원 급여 산정" },
-    ],
-  },
 ] as const;

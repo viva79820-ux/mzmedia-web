@@ -181,9 +181,323 @@ model EstimateInquiry {
   privacyAgreedAt  DateTime
   estimateSnapshot Json            @default("{}")
   status           String          @default("신규")
+  customerId       String?
+  customer         Customer?       @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  leadId           String?
+  lead             Lead?           @relation(fields: [leadId], references: [id], onDelete: SetNull)
   createdAt        DateTime        @default(now())
   updatedAt        DateTime        @updatedAt
 
   @@index([createdAt])
   @@index([status])
+  @@index([customerId])
+  @@index([leadId])
+}
+
+// ─── MZ MEDIA OS ───────────────────────────────────────────
+
+enum StaffRole {
+  SUPER_ADMIN
+  MANAGER
+  EMPLOYEE
+  FREELANCER
+  ACCOUNTING
+}
+
+enum LeadStage {
+  LEAD
+  CONTACT
+  CONSULT
+  QUOTE
+  NEGOTIATE
+  WON
+  LOST
+  ON_HOLD
+}
+
+enum LeadSource {
+  NAVER
+  GOOGLE
+  WEBSITE
+  REFERRAL
+  NAVER_CAFE
+  NARAJANGTER
+  WISHKET
+  KMONG
+  OPENCHAT
+  DIRECT
+  OTHER
+}
+
+enum ProjectStatus {
+  CONTRACTED
+  PREP
+  IN_PROGRESS
+  REVIEW
+  REVISION
+  DELIVERED
+  CLOSED
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  REVIEW
+  DONE
+  HOLD
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum RecurringCadence {
+  DAILY
+  WEEKLY
+  MONTHLY
+}
+
+enum PaymentKind {
+  DEPOSIT
+  MILESTONE
+  FINAL
+  OTHER
+}
+
+enum PaymentStatus {
+  PLANNED
+  PAID
+  OVERDUE
+  CANCELLED
+}
+
+model Staff {
+  id           String     @id @default(cuid())
+  username     String     @unique
+  passwordHash String
+  name         String
+  email        String     @default("")
+  phone        String     @default("")
+  role         StaffRole  @default(EMPLOYEE)
+  active       Boolean    @default(true)
+  department   String     @default("")
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  ownedLeads       Lead[]            @relation("LeadOwner")
+  leadActivities   LeadActivity[]
+  projectMemberships ProjectMember[]
+  assignedTasks    Task[]            @relation("TaskAssignee")
+  createdTasks     Task[]            @relation("TaskCreator")
+  recurringTemplates RecurringTemplate[]
+  recurringInstances RecurringInstance[]
+  updatedLeads     Lead[]            @relation("LeadUpdatedBy")
+  updatedProjects  Project[]         @relation("ProjectUpdatedBy")
+
+  @@index([role, active])
+}
+
+model Customer {
+  id           String   @id @default(cuid())
+  companyName  String
+  contactName  String   @default("")
+  phone        String   @default("")
+  email        String   @default("")
+  memo         String   @default("")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  leads      Lead[]
+  projects   Project[]
+  inquiries  EstimateInquiry[]
+
+  @@index([companyName])
+  @@index([phone])
+  @@index([email])
+}
+
+model Lead {
+  id               String     @id @default(cuid())
+  customerId       String
+  customer         Customer   @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  title            String
+  stage            LeadStage  @default(LEAD)
+  source           LeadSource @default(WEBSITE)
+  ownerId          String?
+  owner            Staff?     @relation("LeadOwner", fields: [ownerId], references: [id], onDelete: SetNull)
+  desiredService   String     @default("")
+  expectedAmount   Int?
+  nextContactDate  String     @default("")
+  inquiryMessage   String     @default("")
+  memo             String     @default("")
+  projectId        String?    @unique
+  project          Project?   @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  updatedById      String?
+  updatedBy        Staff?     @relation("LeadUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+
+  activities LeadActivity[]
+  inquiries  EstimateInquiry[]
+
+  @@index([stage, updatedAt])
+  @@index([ownerId])
+  @@index([source])
+  @@index([nextContactDate])
+}
+
+model LeadActivity {
+  id        String   @id @default(cuid())
+  leadId    String
+  lead      Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  staffId   String?
+  staff     Staff?   @relation(fields: [staffId], references: [id], onDelete: SetNull)
+  body      String
+  createdAt DateTime @default(now())
+
+  @@index([leadId, createdAt])
+}
+
+model Project {
+  id             String        @id @default(cuid())
+  customerId     String
+  customer       Customer      @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  name           String
+  status         ProjectStatus @default(CONTRACTED)
+  contractAmount Int           @default(0)
+  startDate      String        @default("")
+  dueDate        String        @default("")
+  deliveredAt    String        @default("")
+  progress       Int           @default(0)
+  memo           String        @default("")
+  updatedById    String?
+  updatedBy      Staff?        @relation("ProjectUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  lead     Lead?
+  members  ProjectMember[]
+  tasks    Task[]
+  payments Payment[]
+  costs    CostItem[]
+
+  @@index([status, dueDate])
+  @@index([customerId])
+}
+
+model ProjectMember {
+  id        String   @id @default(cuid())
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  staffId   String
+  staff     Staff    @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  roleLabel String   @default("member")
+  createdAt DateTime @default(now())
+
+  @@unique([projectId, staffId])
+}
+
+model Task {
+  id           String       @id @default(cuid())
+  projectId    String?
+  project      Project?     @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  title        String
+  description  String       @default("")
+  assigneeId   String?
+  assignee     Staff?       @relation("TaskAssignee", fields: [assigneeId], references: [id], onDelete: SetNull)
+  createdById  String?
+  createdBy    Staff?       @relation("TaskCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  priority     TaskPriority @default(MEDIUM)
+  status       TaskStatus   @default(TODO)
+  progress     Int          @default(0)
+  startDate    String       @default("")
+  dueDate      String       @default("")
+  completedAt  String       @default("")
+  resultNote   String       @default("")
+  memo         String       @default("")
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  @@index([assigneeId, status])
+  @@index([projectId])
+  @@index([dueDate])
+}
+
+model RecurringTemplate {
+  id          String           @id @default(cuid())
+  title       String
+  description String           @default("")
+  cadence     RecurringCadence @default(DAILY)
+  kpiTarget   Int              @default(1)
+  assigneeId  String?
+  assignee    Staff?           @relation(fields: [assigneeId], references: [id], onDelete: SetNull)
+  active      Boolean          @default(true)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  instances RecurringInstance[]
+
+  @@index([active, cadence])
+}
+
+model RecurringInstance {
+  id         String            @id @default(cuid())
+  templateId String
+  template   RecurringTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  periodKey  String
+  assigneeId String?
+  assignee   Staff?            @relation(fields: [assigneeId], references: [id], onDelete: SetNull)
+  kpiTarget  Int               @default(1)
+  kpiDone    Int               @default(0)
+  status     TaskStatus        @default(TODO)
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+
+  @@unique([templateId, periodKey])
+  @@index([assigneeId, periodKey])
+}
+
+model Payment {
+  id        String        @id @default(cuid())
+  projectId String?
+  project   Project?      @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  label     String        @default("")
+  kind      PaymentKind   @default(OTHER)
+  amount    Int           @default(0)
+  dueDate   String        @default("")
+  paidAt    String        @default("")
+  status    PaymentStatus @default(PLANNED)
+  memo      String        @default("")
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  @@index([status, dueDate])
+  @@index([projectId])
+  @@index([paidAt])
+}
+
+model CostItem {
+  id        String   @id @default(cuid())
+  projectId String?
+  project   Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  label     String
+  category  String   @default("기타")
+  amount    Int      @default(0)
+  spentAt   String   @default("")
+  memo      String   @default("")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([projectId])
+  @@index([category])
+}
+
+model OsSetting {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String
+  updatedAt DateTime @updatedAt
 }

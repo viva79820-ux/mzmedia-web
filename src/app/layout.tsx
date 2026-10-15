@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Noto_Sans_KR, Syne } from "next/font/google";
-import { Footer } from "@/components/Footer";
-import { Header } from "@/components/Header";
+import { AppChrome } from "@/components/AppChrome";
 import { site } from "@/lib/site";
 import "./globals.css";
 
@@ -44,10 +43,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko" className={`${body.variable} ${display.variable} h-full`}>
-      <body className="flex min-h-full flex-col antialiased">
-        <Header />
-        <main className="flex-1">{children}</main>
-        <Footer />
+      <body className="min-h-full antialiased">
+        <AppChrome>{children}</AppChrome>
       </body>
     </html>
   );

@@ -73,55 +73,99 @@ export async function POST(request: Request) {
       }
     }
 
-    const inquiry = await prisma.estimateInquiry.create({
-      data: {
-        productId: product?.id ?? null,
-        companyName,
-        contactName,
-        phone,
-        email,
-        serviceName,
-        budgetLabel: body.budgetLabel?.trim() ?? "",
-        dueDate: body.dueDate?.trim() ?? "",
-        message,
-        privacyAgreedAt: new Date(),
-        estimateSnapshot: JSON.parse(JSON.stringify(snapshot)) as object,
-      },
-    });
+    const expectedAmount =
+      typeof (snapshot.estimate as { total?: number } | undefined)?.total ===
+      "number"
+        ? ((snapshot.estimate as { total: number }).total as number)
+        : null;
 
-    // Optional handoff into internal Order CRM
-    await prisma.order.create({
-      data: {
-        orderDate: new Date().toISOString().slice(0, 10),
-        clientName: companyName,
-        contact: `${contactName} / ${phone} / ${email}`,
-        product: serviceName || "견적 문의",
-        quantity: 1,
-        unitPrice: 0,
-        amount: 0,
-        status: "견적서",
-        assignee: "",
-        memo: body.budgetLabel?.trim()
-          ? `예상예산: ${body.budgetLabel}`
-          : "",
-        detailText: [
+    const result = await prisma.$transaction(async (tx) => {
+      let customer =
+        (phone
+          ? await tx.customer.findFirst({ where: { phone } })
+          : null) ??
+        (email
+          ? await tx.customer.findFirst({ where: { email } })
+          : null);
+
+      if (customer) {
+        customer = await tx.customer.update({
+          where: { id: customer.id },
+          data: {
+            companyName,
+            contactName,
+            phone: phone || customer.phone,
+            email: email || customer.email,
+          },
+        });
+      } else {
+        customer = await tx.customer.create({
+          data: { companyName, contactName, phone, email },
+        });
+      }
+
+      const lead = await tx.lead.create({
+        data: {
+          customerId: customer.id,
+          title: `${companyName} · ${serviceName || "견적 문의"}`,
+          stage: "LEAD",
+          source: "WEBSITE",
+          desiredService: serviceName,
+          expectedAmount,
+          inquiryMessage: message,
+          memo: [
+            body.budgetLabel?.trim()
+              ? `예상예산: ${body.budgetLabel.trim()}`
+              : "",
+            body.dueDate?.trim() ? `희망 완료일: ${body.dueDate.trim()}` : "",
+          ]
+            .filter(Boolean)
+            .join("\n"),
+        },
+      });
+
+      await tx.leadActivity.create({
+        data: {
+          leadId: lead.id,
+          body: `홈페이지 견적문의 접수\n${message}`,
+        },
+      });
+
+      const inquiry = await tx.estimateInquiry.create({
+        data: {
+          productId: product?.id ?? null,
+          companyName,
+          contactName,
+          phone,
+          email,
+          serviceName,
+          budgetLabel: body.budgetLabel?.trim() ?? "",
+          dueDate: body.dueDate?.trim() ?? "",
           message,
-          body.dueDate ? `희망 완료일: ${body.dueDate}` : "",
-          snapshot.estimate
-            ? `자동견적: ${JSON.stringify(snapshot.estimate)}`
-            : "",
-        ]
-          .filter(Boolean)
-          .join("\n\n"),
-        hasDetail: true,
-      },
+          privacyAgreedAt: new Date(),
+          estimateSnapshot: JSON.parse(JSON.stringify(snapshot)) as object,
+          customerId: customer.id,
+          leadId: lead.id,
+          status: "신규",
+        },
+      });
+
+      return { inquiry, lead, customer };
     });
 
-    return NextResponse.json({ ok: true, id: inquiry.id });
+    return NextResponse.json({
+      ok: true,
+      id: result.inquiry.id,
+      leadId: result.lead.id,
+      customerId: result.customer.id,
+    });
   } catch (error) {
     console.error(error);
     return NextResponse.json(
-      { ok: false, message: "문의 접수에 실패했습니다. 잠시 후 다시 시도해 주세요." },
+      {
+        ok: false,
+        message: "문의 접수에 실패했습니다. 잠시 후 다시 시도해 주세요.",
+      },
       { status: 500 },
     );
   }

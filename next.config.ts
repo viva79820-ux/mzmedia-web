@@ -17,6 +17,11 @@ const nextConfig: NextConfig = {
         destination: "/estimate",
         permanent: true,
       },
+      { source: "/admin", destination: "/os/login", permanent: false },
+      { source: "/admin/orders", destination: "/os/legacy/orders", permanent: false },
+      { source: "/admin/products", destination: "/os/catalog", permanent: false },
+      { source: "/admin/inquiries", destination: "/os/leads", permanent: false },
+      { source: "/admin/wages", destination: "/os/wages", permanent: false },
     ];
   },
 };
