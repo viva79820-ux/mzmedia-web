@@ -48,8 +48,8 @@ export default function DashboardPage() {
           <h1>대시보드</h1>
           <p>에이전트는 {data.mode === "api" ? "언어 모델 API" : "비용이 들지 않는 로컬 플래너"}로 계획합니다.</p>
         </div>
-        <Link className="btn" href="/office/agent">
-          새 목표
+        <Link className="btn" href="/office/package">
+          전달 패키지
         </Link>
       </header>
       <MeetingBriefs />

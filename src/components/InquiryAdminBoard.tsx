@@ -93,14 +93,23 @@ export function InquiryAdminBoard() {
               <p className="mt-3 whitespace-pre-wrap text-sm text-ink">
                 {item.message}
               </p>
-              <button
-                type="button"
-                className="mt-4 h-10 rounded-full bg-teal px-4 text-sm font-semibold text-white disabled:opacity-60"
-                disabled={pending === item.id}
-                onClick={() => openBrief(item.id).catch(() => setError("미팅 브리프를 만들지 못했습니다."))}
-              >
-                {pending === item.id ? "정리 중" : "미팅 브리프"}
-              </button>
+              <div className="mt-4 flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  className="h-10 rounded-full bg-teal px-4 text-sm font-semibold text-white disabled:opacity-60"
+                  disabled={pending === item.id}
+                  onClick={() => openBrief(item.id).catch(() => setError("미팅 브리프를 만들지 못했습니다."))}
+                >
+                  {pending === item.id ? "정리 중" : "미팅 브리프"}
+                </button>
+                <button
+                  type="button"
+                  className="h-10 rounded-full border border-line bg-white px-4 text-sm font-semibold text-ink"
+                  onClick={() => router.push(`/office/package?inquiry=${item.id}`)}
+                >
+                  전달 패키지
+                </button>
+              </div>
             </article>
           ))
         )}

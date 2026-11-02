@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 
 const LINKS = [
   { href: "/office", label: "대시보드" },
+  { href: "/office/package", label: "전달 패키지" },
   { href: "/office/agent", label: "마스터 에이전트" },
   { href: "/office/memory", label: "기억 관리" },
   { href: "/office/improve", label: "자기개선" },
