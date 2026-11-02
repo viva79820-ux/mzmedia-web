@@ -79,6 +79,15 @@
 .office-app .log p { margin: 0; font-size: 13px; }
 .office-app .log .warn { color: var(--warn); }
 .office-app .log .error { color: var(--bad); }
+.office-app .week-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 8px; }
+.office-app .day { min-height: 148px; padding: 12px; }
+.office-app .day.today { border-color: var(--accent); }
+.office-app .day strong { display: block; font-size: 13px; margin-bottom: 8px; }
+.office-app .day-item { margin-top: 8px; }
+.office-app .day-item b { font-size: 13px; }
+.office-app .reschedule, .office-app .consult-row { display: grid; gap: 8px; }
+.office-app .consult-row { grid-template-columns: 1fr 160px auto; align-items: center; }
+.office-app .reschedule input, .office-app .consult-row input { padding: 8px 10px; }
 
 @media (max-width: 900px) {
   .office-app .shell { grid-template-columns: 1fr; }
@@ -86,7 +95,7 @@
   .office-app .nav { flex-direction: row; overflow: auto; }
   .office-app .nav a, .office-app .side .ghost { white-space: nowrap; flex: none; }
   .office-app .side button.ghost { margin-top: 0; }
-  .office-app .stats, .office-app .grid-2 { grid-template-columns: 1fr; }
+  .office-app .stats, .office-app .grid-2, .office-app .week-grid, .office-app .consult-row { grid-template-columns: 1fr; }
   .office-app .main { padding: 18px; }
   .office-app .page-head { align-items: flex-start; flex-direction: column; }
 }

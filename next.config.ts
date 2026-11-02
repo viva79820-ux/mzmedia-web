@@ -12,6 +12,7 @@ const nextConfig: NextConfig = {
     "/api/office/briefs": ["./prisma/migrations/20261103000000_ai_office/migration.sql"],
     "/api/office/packages": ["./prisma/migrations/20261103000000_ai_office/migration.sql"],
     "/api/office/work": ["./prisma/migrations/20261103000000_ai_office/migration.sql"],
+    "/api/office/week": ["./prisma/migrations/20261103000000_ai_office/migration.sql"],
   },
   async redirects() {
     return [
