@@ -49,7 +49,10 @@ export default function DashboardPage() {
           <p>에이전트는 {data.mode === "api" ? "언어 모델 API" : "비용이 들지 않는 로컬 플래너"}로 계획합니다.</p>
         </div>
         <div className="actions">
-          <Link className="btn" href="/office/week">
+          <Link className="btn" href="/office/morning">
+            아침 보고
+          </Link>
+          <Link className="btn-line" href="/office/week">
             대표 일정
           </Link>
           <Link className="btn-line" href="/office/package">

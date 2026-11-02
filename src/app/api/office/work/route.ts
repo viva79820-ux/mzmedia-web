@@ -19,6 +19,7 @@ export async function POST(request: Request) {
     title?: string;
     dueDate?: string;
     assigneeId?: string;
+    businessLine?: string;
   } | null;
   try {
     const result = await startProduction({
@@ -26,6 +27,7 @@ export async function POST(request: Request) {
       title: body?.title,
       dueDate: body?.dueDate,
       assigneeId: body?.assigneeId,
+      businessLine: body?.businessLine,
     });
     const board = await workBoard();
     return NextResponse.json({ ...result, ...board });

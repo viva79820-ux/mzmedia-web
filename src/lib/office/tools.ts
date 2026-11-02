@@ -1,3 +1,5 @@
+import { readFileSync, readdirSync } from "node:fs";
+import path from "node:path";
 import { blockedReason, isToolName, limits } from "@/lib/office/policy";
 import { addUsage, listJobs, listMemories, listPolicies, listSteps } from "@/lib/office/db";
 import { completeJson } from "@/lib/office/llm";
@@ -24,11 +26,41 @@ export async function searchMemoryTool(query: string): Promise<ToolOutput> {
   const matched = related(query, all);
   const memories = (matched.length ? matched : all.filter((item) => item.kind === "rule")).slice(0, 8);
   const lines = memories.map((item) => `- [${item.kind}] ${item.title}: ${clip(item.content, 180)}`);
+  const knowledge = knowledgeHits(query);
+  const markdown = [...lines, ...knowledge].join("\n");
   return {
     ok: true,
-    summary: memories.length ? `관련 기억 ${memories.length}건을 찾았습니다.` : "관련 기억이 없습니다.",
-    markdown: lines.join("\n"),
+    summary: memories.length || knowledge.length ? `기억 ${memories.length}건, 기업 지식 ${knowledge.length}건을 찾았습니다.` : "관련 기억이 없습니다.",
+    markdown,
   };
+}
+
+function knowledgeHits(query: string) {
+  const tokens = query
+    .toLowerCase()
+    .split(/[^\p{L}\p{N}]+/u)
+    .filter((token) => token.length >= 2);
+  if (!tokens.length) return [];
+  const directory = path.join(process.cwd(), "knowledge");
+  let files: string[] = [];
+  try {
+    files = readdirSync(directory).filter((name) => name.endsWith(".md"));
+  } catch {
+    return [];
+  }
+  const hits: string[] = [];
+  for (const name of files) {
+    const text = readFileSync(path.join(directory, name), "utf8");
+    for (const line of text.split(/\r?\n/)) {
+      const clean = line.replace(/^[-#*\s]+/, "").trim();
+      if (clean.length < 8) continue;
+      const hay = clean.toLowerCase();
+      if (!tokens.some((token) => hay.includes(token))) continue;
+      hits.push(`- [지식:${name}] ${clip(clean, 180)}`);
+      if (hits.length >= 8) return hits;
+    }
+  }
+  return hits;
 }
 
 export async function queryRunsTool(query: string): Promise<ToolOutput> {
@@ -127,7 +159,7 @@ function localDraft(goal: string, rules: string[], blocked: string | null) {
     rules.length ? rules.map((rule) => `- ${rule}`).join("\n") : "- 등록된 추가 규칙이 없습니다.",
     ``,
     `## 금액`,
-    `금액이 필요하면 예상 범위로만 적고, 상담 후 확정이라고 함께 적습니다. 이 초안은 확정 견적이 아닙니다.`,
+    `금액이 필요하면 기존 단가의 예상 범위로만 적고, 상담 후 확정이라고 함께 적습니다. 월 수량이 확인되지 않으면 발행 수량을 만들지 않습니다.`,
     ``,
     `## 대표 확인`,
     `- 외부에 전달해도 되는 문장인지`,
@@ -218,7 +250,7 @@ export async function createPlan(job: Job) {
   const result = await completeJson({
     jobId: job.id,
     remainingUsd: cap.maxCostUsd,
-    system: `당신은 엠지미디어 업무 계획기다. JSON {"analysis":"","steps":[{"title":"","tool":"","input":{}}]} 만 반환한다. tool은 search_memory, query_runs, save_plan, draft_document 중 하나만 쓴다. 이메일 발송, 결제, 계약, 운영 코드, 서버 작업은 계획에 넣지 않는다. 단계는 최대 ${Math.max(1, cap.maxSteps - 3)}개다.`,
+    system: `당신은 엠지미디어 PM이다. JSON {"analysis":"","steps":[{"title":"","tool":"","input":{}}]} 만 반환한다. tool은 search_memory, query_runs, save_plan, draft_document 중 하나만 쓴다. 여섯 사업은 온라인마케팅, 영상, 개발, 렌탈, 교육, 디자인이다. 사업마다 다른 단계를 쓴다. 이메일 발송, 결제, 계약 확정, 입금 완료 처리, 운영 코드, 서버 작업은 계획에 넣지 않는다. 월 수량이나 입금 기록이 없으면 확인 필요라고 쓴다. 문미영에게 신규 고객을 배정하지 않는다. 단계는 최대 ${Math.max(1, cap.maxSteps - 3)}개다.`,
     user: `목표:\n${job.goal}\n\n적용 중인 개선:\n${policyText}`,
   });
 

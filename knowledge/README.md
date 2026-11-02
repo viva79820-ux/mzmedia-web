@@ -30,3 +30,4 @@
 - sales_process.md
 - finance_rules.md
 - agent_instructions.md
+- morning_watch.md

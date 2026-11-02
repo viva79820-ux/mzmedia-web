@@ -28,6 +28,7 @@ export default function WorkPage() {
   const [title, setTitle] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [assigneeId, setAssigneeId] = useState("");
+  const [businessLine, setBusinessLine] = useState("");
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [pending, setPending] = useState(false);
@@ -61,7 +62,7 @@ export default function WorkPage() {
     const response = await fetch("/api/office/work", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ jobId, title, dueDate, assigneeId }),
+      body: JSON.stringify({ jobId, title, dueDate, assigneeId, businessLine }),
     });
     const body = (await response.json()) as { created?: number; already?: boolean; exceptions?: ExceptionItem[]; error?: string };
     setPending(false);
@@ -80,7 +81,7 @@ export default function WorkPage() {
         <div>
           <p className="kicker">V4 · PM</p>
           <h1>착수와 예외</h1>
-          <p>대표는 막힌 일만 봅니다. 자료, 제작, 확인, 문안, 납품은 직원 할일로 나갑니다.</p>
+          <p>대표는 막힌 일만 봅니다. 할일 단계는 사업마다 다릅니다.</p>
         </div>
       </header>
       <section className="grid-2">
@@ -122,6 +123,18 @@ export default function WorkPage() {
             </select>
           </label>
           <label>
+            사업
+            <select value={businessLine} onChange={(event) => setBusinessLine(event.target.value)} required>
+              <option value="">선택</option>
+              <option value="MARKETING_RETAINER">온라인마케팅</option>
+              <option value="VIDEO_PRODUCTION">영상</option>
+              <option value="WEB_APP_DEVELOPMENT">홈페이지·앱·AI</option>
+              <option value="EQUIPMENT_RENTAL">장비 렌탈</option>
+              <option value="EDUCATION_COURSE">교육</option>
+              <option value="DESIGN_PRINT">디자인·인쇄</option>
+            </select>
+          </label>
+          <label>
             작업 이름
             <input value={title} onChange={(event) => setTitle(event.target.value)} />
           </label>
@@ -140,11 +153,11 @@ export default function WorkPage() {
               ))}
             </select>
           </label>
-          <p className="help">담당을 고르면 그 직원의 내 업무에 나타납니다. 고객 발송은 만들지 않습니다.</p>
+          <p className="help">문미영은 담당 고객 수를 확인하기 전에는 새 배정을 받지 않습니다. 고객 발송은 만들지 않습니다.</p>
           {error ? <p className="error">{error}</p> : null}
           {notice ? <p className="help">{notice}</p> : null}
           <button className="btn" type="submit" disabled={pending}>
-            {pending ? "할일을 만드는 중" : "할일 5건 만들기"}
+            {pending ? "할일을 만드는 중" : "사업별 할일 만들기"}
           </button>
         </form>
       </section>
