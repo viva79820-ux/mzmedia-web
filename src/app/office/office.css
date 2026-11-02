@@ -1,0 +1,92 @@
+.office-app {
+  --ink: #161b22;
+  --ink-soft: #3d4654;
+  --muted: #6d675d;
+  --paper: #f4f1ea;
+  --card: #fffcf7;
+  --line: #e3dccf;
+  --accent: #1a4aac;
+  --accent-deep: #12367d;
+  --teal: #0f6e68;
+  --good: #1f6b45;
+  --good-bg: #e7f5ec;
+  --warn: #8a5a00;
+  --warn-bg: #fff4d8;
+  --bad: #9d2c2c;
+  --bad-bg: #fdecec;
+  --side: #121820;
+  --shadow: 0 16px 40px rgba(22, 27, 34, 0.06);
+  min-height: 100vh;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: "Segoe UI", "Malgun Gothic", sans-serif;
+}
+
+.office-app a { color: inherit; }
+.office-app button, .office-app input, .office-app textarea, .office-app select { font: inherit; }
+.office-app h1, .office-app h2, .office-app h3 { font-weight: 750; letter-spacing: -0.03em; }
+.office-app h1 { font-size: 32px; line-height: 1.2; margin: 0; }
+.office-app h2 { font-size: 18px; margin: 0 0 10px; }
+.office-app .kicker { letter-spacing: 0.16em; text-transform: uppercase; color: var(--teal); font-size: 12px; font-weight: 700; margin: 0; }
+.office-app .shell { min-height: 100vh; display: grid; grid-template-columns: 240px 1fr; }
+.office-app .side { background: var(--side); color: white; padding: 28px 18px; display: flex; flex-direction: column; gap: 12px; }
+.office-app .brand small { display: block; color: rgba(255,255,255,0.55); letter-spacing: 0.14em; font-size: 11px; }
+.office-app .brand strong { display: block; margin-top: 6px; font-size: 20px; }
+.office-app .nav { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+.office-app .nav a, .office-app .ghost { border-radius: 999px; padding: 10px 14px; text-decoration: none; color: rgba(255,255,255,0.78); }
+.office-app .nav a.active, .office-app .nav a:hover { background: rgba(255,255,255,0.08); color: white; }
+.office-app .side .ghost { border: 1px solid rgba(255,255,255,0.16); background: transparent; color: white; cursor: pointer; text-align: left; }
+.office-app .side button.ghost { margin-top: auto; }
+.office-app .main { padding: 32px; }
+.office-app .page-head { display: flex; justify-content: space-between; gap: 16px; align-items: flex-end; margin-bottom: 22px; }
+.office-app .page-head p { margin: 6px 0 0; color: var(--muted); }
+.office-app .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+.office-app .card { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 18px; box-shadow: var(--shadow); }
+.office-app .stat span { color: var(--muted); font-size: 13px; }
+.office-app .stat strong { display: block; margin-top: 8px; font-size: 28px; }
+.office-app .grid-2 { display: grid; grid-template-columns: 1.3fr 0.7fr; gap: 14px; margin-top: 14px; }
+.office-app .stack { display: grid; gap: 14px; }
+.office-app table { width: 100%; border-collapse: collapse; }
+.office-app th, .office-app td { text-align: left; padding: 12px 8px; border-bottom: 1px solid var(--line); vertical-align: top; font-size: 14px; }
+.office-app th { color: var(--muted); font-weight: 650; font-size: 12px; }
+.office-app tr:last-child td { border-bottom: 0; }
+.office-app .badge { display: inline-flex; align-items: center; border-radius: 999px; padding: 4px 9px; font-size: 12px; font-weight: 700; background: #ece7dc; color: var(--ink-soft); }
+.office-app .badge.running, .office-app .badge.planning, .office-app .badge.evaluating, .office-app .badge.ready, .office-app .badge.created { background: #e7eefc; color: var(--accent-deep); }
+.office-app .badge.completed { background: var(--good-bg); color: var(--good); }
+.office-app .badge.failed { background: var(--bad-bg); color: var(--bad); }
+.office-app .badge.waiting_approval { background: var(--warn-bg); color: var(--warn); }
+.office-app .badge.paused { background: #ece7dc; }
+.office-app .btn, .office-app .btn-line { border: 0; border-radius: 999px; padding: 11px 16px; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; }
+.office-app .btn { background: var(--accent); color: white; font-weight: 700; }
+.office-app .btn:disabled { opacity: 0.55; cursor: wait; }
+.office-app .btn-line { background: white; border: 1px solid var(--line); color: var(--ink); }
+.office-app .btn-line.danger { color: var(--bad); }
+.office-app .actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.office-app label { display: grid; gap: 6px; font-size: 13px; font-weight: 700; color: var(--ink-soft); }
+.office-app textarea, .office-app input, .office-app select { width: 100%; border: 1px solid var(--line); background: white; border-radius: 12px; padding: 12px 14px; color: var(--ink); }
+.office-app textarea { min-height: 140px; resize: vertical; }
+.office-app .help { color: var(--muted); font-size: 13px; line-height: 1.5; }
+.office-app .error { color: var(--bad); font-size: 14px; }
+.office-app .timeline { display: grid; gap: 10px; }
+.office-app .step { display: grid; grid-template-columns: 36px 1fr; gap: 10px; }
+.office-app .dot { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; background: var(--ink); color: white; font-size: 12px; font-weight: 700; }
+.office-app .step.pending .dot, .office-app .step.skipped .dot { background: #d9d3c7; color: var(--ink); }
+.office-app .step.failed .dot { background: var(--bad); }
+.office-app .step.done .dot { background: var(--good); }
+.office-app .step h3 { margin: 0 0 4px; font-size: 16px; }
+.office-app pre, .office-app .prose { white-space: pre-wrap; word-break: break-word; font-family: "Segoe UI", "Malgun Gothic", sans-serif; line-height: 1.55; margin: 8px 0 0; }
+.office-app .log { max-height: 280px; overflow: auto; display: grid; gap: 8px; }
+.office-app .log p { margin: 0; font-size: 13px; }
+.office-app .log .warn { color: var(--warn); }
+.office-app .log .error { color: var(--bad); }
+
+@media (max-width: 900px) {
+  .office-app .shell { grid-template-columns: 1fr; }
+  .office-app .side { position: sticky; top: 0; z-index: 5; padding: 14px; }
+  .office-app .nav { flex-direction: row; overflow: auto; }
+  .office-app .nav a, .office-app .side .ghost { white-space: nowrap; flex: none; }
+  .office-app .side button.ghost { margin-top: 0; }
+  .office-app .stats, .office-app .grid-2 { grid-template-columns: 1fr; }
+  .office-app .main { padding: 18px; }
+  .office-app .page-head { align-items: flex-start; flex-direction: column; }
+}

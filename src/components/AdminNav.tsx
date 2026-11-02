@@ -8,6 +8,7 @@ const items = [
   { href: "/admin/products", label: "상품 관리" },
   { href: "/admin/inquiries", label: "견적 문의" },
   { href: "/admin/wages", label: "급여명세서" },
+  { href: "/office", label: "AI Office" },
 ] as const;
 
 export function AdminNav() {

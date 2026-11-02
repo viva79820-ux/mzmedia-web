@@ -10,8 +10,9 @@ export async function AppChrome({
   const headerList = await headers();
   const pathname = headerList.get("x-pathname") ?? "";
   const isOs = pathname === "/os" || pathname.startsWith("/os/");
+  const isOffice = pathname === "/office" || pathname.startsWith("/office/");
 
-  if (isOs) {
+  if (isOs || isOffice) {
     return <>{children}</>;
   }
 

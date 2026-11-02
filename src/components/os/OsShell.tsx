@@ -36,6 +36,7 @@ const navItems: {
   { href: "/os/legacy/orders", label: "레거시 오더", roles: ["SUPER_ADMIN", "MANAGER"] },
   { href: "/os/catalog", label: "상품 카탈로그", roles: ["SUPER_ADMIN", "MANAGER"] },
   { href: "/os/wages", label: "급여명세서", roles: ["SUPER_ADMIN", "MANAGER", "ACCOUNTING"] },
+  { href: "/office", label: "AI Office", roles: ["SUPER_ADMIN", "MANAGER"] },
 ]
 
 export function OsShell({

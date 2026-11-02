@@ -629,6 +629,121 @@ model FileAsset {
   @@index([contractId])
 }
 
+model OfficeJob {
+  id         String    @id @default(cuid())
+  goal       String
+  status     String
+  analysis   String    @default("")
+  report     String    @default("") @db.Text
+  error      String    @default("")
+  paused     Boolean   @default(false)
+  costUsd    Float     @default(0)
+  tokens     Int       @default(0)
+  startedAt  DateTime?
+  finishedAt DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  steps      OfficeStep[]
+  logs       OfficeLog[]
+  memories   OfficeMemory[]
+  improvements OfficeImprovement[]
+  approvals  OfficeApproval[]
+  usage      OfficeUsage[]
+
+  @@index([status, createdAt])
+}
+
+model OfficeStep {
+  id         String    @id @default(cuid())
+  jobId      String
+  job        OfficeJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  position   Int
+  title      String
+  tool       String
+  inputJson  String    @default("{}") @db.Text
+  outputJson String?   @db.Text
+  status     String
+  log        String    @default("") @db.Text
+  startedAt  DateTime?
+  finishedAt DateTime?
+
+  @@index([jobId, position])
+}
+
+model OfficeLog {
+  id        String    @id @default(cuid())
+  jobId     String
+  job       OfficeJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  stepId    String?
+  level     String
+  message   String    @db.Text
+  createdAt DateTime  @default(now())
+
+  @@index([jobId, createdAt])
+}
+
+model OfficeMemory {
+  id        String     @id @default(cuid())
+  kind      String
+  title     String
+  content   String     @db.Text
+  jobId     String?
+  job       OfficeJob? @relation(fields: [jobId], references: [id], onDelete: SetNull)
+  createdAt DateTime   @default(now())
+
+  @@index([kind, createdAt])
+}
+
+model OfficeImprovement {
+  id         String    @id @default(cuid())
+  jobId      String?
+  job        OfficeJob? @relation(fields: [jobId], references: [id], onDelete: SetNull)
+  problem    String    @db.Text
+  proposal   String    @db.Text
+  validation String    @default("") @db.Text
+  status     String
+  createdAt  DateTime  @default(now())
+  decidedAt  DateTime?
+  approvals  OfficeApproval[]
+  policies   OfficePolicy[]
+
+  @@index([status, createdAt])
+}
+
+model OfficeApproval {
+  id            String    @id @default(cuid())
+  jobId         String
+  job           OfficeJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  improvementId String?
+  improvement   OfficeImprovement? @relation(fields: [improvementId], references: [id], onDelete: SetNull)
+  summary       String    @db.Text
+  status        String
+  createdAt     DateTime  @default(now())
+  decidedAt     DateTime?
+
+  @@index([jobId, status])
+}
+
+model OfficePolicy {
+  id            String    @id @default(cuid())
+  content       String    @db.Text
+  improvementId String?
+  improvement   OfficeImprovement? @relation(fields: [improvementId], references: [id], onDelete: SetNull)
+  active        Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+}
+
+model OfficeUsage {
+  id        String     @id @default(cuid())
+  jobId     String?
+  job       OfficeJob? @relation(fields: [jobId], references: [id], onDelete: SetNull)
+  model     String
+  tokensIn  Int
+  tokensOut Int
+  costUsd   Float
+  createdAt DateTime   @default(now())
+}
+
 model OsNotification {
   id        String           @id @default(cuid())
   staffId   String?
