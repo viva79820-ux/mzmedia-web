@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/admin-auth";
+import { ensureOfficeSchema } from "@/lib/office/schema";
 
 export async function guardOffice() {
   try {
     await requireAdmin();
+    await ensureOfficeSchema();
     return null;
   } catch (error) {
     if (error instanceof Error && error.message === "UNAUTHORIZED") {
