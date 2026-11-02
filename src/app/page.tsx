@@ -52,6 +52,55 @@ export default async function HomePage() {
 
   return (
     <>
+      <section className="border-b border-line bg-white pt-8 pb-12 md:pt-10 md:pb-16">
+        <div className="site-shell">
+          <Reveal>
+            <p className="text-xs font-semibold tracking-[0.2em] text-teal uppercase">
+              Services
+            </p>
+            <h2 className="font-display mt-3 text-3xl font-bold tracking-tight text-ink md:text-4xl">
+              필요한 서비스를 선택하세요
+            </h2>
+            <p className="mt-3 max-w-2xl text-muted">
+              상품을 고른 뒤 옵션을 입력하면 예상 견적과 함께 문의할 수 있습니다.
+            </p>
+          </Reveal>
+
+          <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+            {categories.map((category, index) => (
+              <Reveal key={category.slug} delay={(Math.min(index + 1, 3) as 1 | 2 | 3)}>
+                <Link
+                  href={`/services/${category.slug}`}
+                  className="block h-full border-t-2 border-ink pt-6 transition hover:border-accent"
+                >
+                  <h3 className="font-display text-xl font-bold text-ink">
+                    {category.name}
+                  </h3>
+                  <p className="mt-3 text-sm leading-relaxed text-muted">
+                    {category.description}
+                  </p>
+                  <p className="mt-5 text-sm font-semibold text-accent">
+                    상품 보기 →
+                  </p>
+                </Link>
+              </Reveal>
+            ))}
+            <Reveal delay={3}>
+              <Link
+                href="/rental"
+                className="block h-full border-t-2 border-ink pt-6 transition hover:border-accent"
+              >
+                <h3 className="font-display text-xl font-bold text-ink">장비 렌탈</h3>
+                <p className="mt-3 text-sm leading-relaxed text-muted">
+                  노트북, 모니터, 행사 음향, 방송 장비. 일정 확인 후 대여합니다.
+                </p>
+                <p className="mt-5 text-sm font-semibold text-accent">렌탈 보기 →</p>
+              </Link>
+            </Reveal>
+          </div>
+        </div>
+      </section>
+
       <section className="relative min-h-[min(100svh,880px)] overflow-hidden">
         <Image
           src="/images/hero-studio.jpg"
@@ -99,55 +148,6 @@ export default async function HomePage() {
             >
               회사소개
             </Link>
-          </div>
-        </div>
-      </section>
-
-      <section className="border-b border-line bg-white py-20 md:py-24">
-        <div className="site-shell">
-          <Reveal>
-            <p className="text-xs font-semibold tracking-[0.2em] text-teal uppercase">
-              Services
-            </p>
-            <h2 className="font-display mt-3 text-3xl font-bold tracking-tight text-ink md:text-4xl">
-              필요한 서비스를 선택하세요
-            </h2>
-            <p className="mt-3 max-w-2xl text-muted">
-              상품을 고른 뒤 옵션을 입력하면 예상 견적과 함께 문의할 수 있습니다.
-            </p>
-          </Reveal>
-
-          <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-            {categories.map((category, index) => (
-              <Reveal key={category.slug} delay={(Math.min(index + 1, 3) as 1 | 2 | 3)}>
-                <Link
-                  href={`/services/${category.slug}`}
-                  className="block h-full border-t-2 border-ink pt-6 transition hover:border-accent"
-                >
-                  <h3 className="font-display text-xl font-bold text-ink">
-                    {category.name}
-                  </h3>
-                  <p className="mt-3 text-sm leading-relaxed text-muted">
-                    {category.description}
-                  </p>
-                  <p className="mt-5 text-sm font-semibold text-accent">
-                    상품 보기 →
-                  </p>
-                </Link>
-              </Reveal>
-            ))}
-            <Reveal delay={3}>
-              <Link
-                href="/rental"
-                className="block h-full border-t-2 border-ink pt-6 transition hover:border-accent"
-              >
-                <h3 className="font-display text-xl font-bold text-ink">장비 렌탈</h3>
-                <p className="mt-3 text-sm leading-relaxed text-muted">
-                  노트북, 모니터, 행사 음향, 방송 장비. 일정 확인 후 대여합니다.
-                </p>
-                <p className="mt-5 text-sm font-semibold text-accent">렌탈 보기 →</p>
-              </Link>
-            </Reveal>
           </div>
         </div>
       </section>

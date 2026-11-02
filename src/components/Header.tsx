@@ -102,12 +102,6 @@ export function Header() {
               <span className="max-w-[7rem] truncate text-sm text-muted">
                 {me.name}
               </span>
-              <Link
-                href="/jobs/new"
-                className="rounded-full border border-line bg-white px-3.5 py-2 text-sm font-semibold text-ink transition hover:border-ink/30"
-              >
-                공고 등록
-              </Link>
               <button
                 type="button"
                 onClick={handleLogout}
@@ -196,12 +190,6 @@ export function Header() {
             <div className="mt-3 flex flex-col gap-2 border-t border-line pt-3">
               {me ? (
                 <>
-                  <Link
-                    href="/jobs/new"
-                    className="rounded-full bg-accent px-4 py-3 text-center text-sm font-semibold text-white"
-                  >
-                    공고 등록
-                  </Link>
                   <button
                     type="button"
                     onClick={handleLogout}

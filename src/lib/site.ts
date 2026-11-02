@@ -45,7 +45,6 @@ export const nav: readonly NavItem[] = [
   },
   { href: "/rental", label: "장비 렌탈" },
   { href: "/estimate", label: "빠른 견적" },
-  { href: "/jobs", label: "작업의뢰정보" },
   {
     href: "/lectures",
     label: "강의",
