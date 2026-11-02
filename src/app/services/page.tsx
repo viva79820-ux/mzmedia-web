@@ -8,7 +8,7 @@ import { prisma } from "@/lib/db";
 export const metadata: Metadata = {
   title: "서비스",
   description:
-    "온라인마케팅, 영상·촬영, 홈페이지·IT, 디자인·인쇄 서비스를 한곳에서 견적받으세요.",
+    "온라인마케팅, 영상·촬영, 홈페이지·IT, 디자인·인쇄, 장비 렌탈을 한곳에서 확인하세요.",
 };
 
 export const dynamic = "force-dynamic";
@@ -68,6 +68,20 @@ export default async function ServicesHubPage() {
               </Link>
             );
           })}
+          <Link
+            href="/rental"
+            className="rounded-[1.5rem] border border-line bg-paper p-6 transition hover:border-accent/40"
+          >
+            <p className="text-xs font-semibold tracking-[0.18em] text-teal uppercase">
+              Rental
+            </p>
+            <h2 className="mt-2 font-display text-2xl font-bold text-ink">장비 렌탈</h2>
+            <p className="mt-2 text-sm text-muted">
+              노트북, 모니터, 행사 음향, 방송 장비를 필요한 기간만 대여합니다. 일정과
+              수량을 확인한 뒤에 비용과 조건을 안내합니다.
+            </p>
+            <p className="mt-4 text-sm font-semibold text-accent">렌탈 상품 보기 →</p>
+          </Link>
         </div>
       </section>
     </>

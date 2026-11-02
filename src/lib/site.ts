@@ -10,6 +10,8 @@ export const site = {
   address: "대구 중구 달구벌대로 1992-16, 2층",
   representative: "김영우",
   kakao: "#",
+  rentalShopUrl:
+    "https://mgmedia-notebook-rental-production.up.railway.app/shop/",
 } as const;
 
 export type NavChild = { href: string; label: string };
@@ -38,8 +40,10 @@ export const nav: readonly NavItem[] = [
       { href: "/services/video", label: "영상·촬영" },
       { href: "/services/web-it", label: "홈페이지·IT" },
       { href: "/services/design-print", label: "디자인·인쇄" },
+      { href: "/rental", label: "장비 렌탈" },
     ],
   },
+  { href: "/rental", label: "장비 렌탈" },
   { href: "/estimate", label: "빠른 견적" },
   { href: "/jobs", label: "작업의뢰정보" },
   {

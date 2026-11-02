@@ -117,7 +117,7 @@ export default async function HomePage() {
             </p>
           </Reveal>
 
-          <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
             {categories.map((category, index) => (
               <Reveal key={category.slug} delay={(Math.min(index + 1, 3) as 1 | 2 | 3)}>
                 <Link
@@ -136,6 +136,18 @@ export default async function HomePage() {
                 </Link>
               </Reveal>
             ))}
+            <Reveal delay={3}>
+              <Link
+                href="/rental"
+                className="block h-full border-t-2 border-ink pt-6 transition hover:border-accent"
+              >
+                <h3 className="font-display text-xl font-bold text-ink">장비 렌탈</h3>
+                <p className="mt-3 text-sm leading-relaxed text-muted">
+                  노트북, 모니터, 행사 음향, 방송 장비. 일정 확인 후 대여합니다.
+                </p>
+                <p className="mt-5 text-sm font-semibold text-accent">렌탈 보기 →</p>
+              </Link>
+            </Reveal>
           </div>
         </div>
       </section>
