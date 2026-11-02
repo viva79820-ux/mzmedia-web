@@ -33,6 +33,11 @@ export function Footer() {
                 </Link>
               </li>
             ))}
+            <li>
+              <Link href="/admin" className="hover:text-white">
+                관리자
+              </Link>
+            </li>
           </ul>
         </div>
 

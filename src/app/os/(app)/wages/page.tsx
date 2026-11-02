@@ -3,7 +3,7 @@ import { WageBoard } from "@/components/WageBoard";
 import { koreaToday } from "@/lib/wages";
 
 export const metadata: Metadata = {
-  title: "급여",
+  title: "급여명세서",
   robots: { index: false, follow: false },
 };
 

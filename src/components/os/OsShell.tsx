@@ -35,7 +35,7 @@ const navItems: {
   { href: "/os/staff", label: "직원", roles: ["SUPER_ADMIN", "MANAGER"] },
   { href: "/os/legacy/orders", label: "레거시 오더", roles: ["SUPER_ADMIN", "MANAGER"] },
   { href: "/os/catalog", label: "상품 카탈로그", roles: ["SUPER_ADMIN", "MANAGER"] },
-  { href: "/os/wages", label: "급여", roles: ["SUPER_ADMIN", "MANAGER", "ACCOUNTING"] },
+  { href: "/os/wages", label: "급여명세서", roles: ["SUPER_ADMIN", "MANAGER", "ACCOUNTING"] },
 ]
 
 export function OsShell({
@@ -105,8 +105,8 @@ export function OsShell({
               MZ MEDIA OS
             </p>
           </div>
-          <div className="flex flex-wrap gap-2 md:hidden">
-            {visible.slice(0, 5).map((item) => (
+          <div className="flex max-w-[70%] flex-wrap gap-2 md:hidden">
+            {visible.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}

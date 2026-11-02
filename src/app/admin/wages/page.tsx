@@ -6,7 +6,7 @@ import { isAdminAuthed } from "@/lib/admin-auth";
 import { koreaToday } from "@/lib/wages";
 
 export const metadata: Metadata = {
-  title: "직원 급여 산정",
+  title: "급여명세서",
   robots: { index: false, follow: false },
 };
 

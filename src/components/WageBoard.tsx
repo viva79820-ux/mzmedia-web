@@ -256,7 +256,7 @@ export function WageBoard({
             Payroll
           </p>
           <h1 className="mt-1 text-2xl font-bold text-ink md:text-3xl">
-            직원 급여 산정
+            급여명세서
           </h1>
           <p className="mt-1 text-sm text-muted">
             대표자 전용 · 직원별 근로시간·주휴수당으로 세전 급여를 계산합니다
