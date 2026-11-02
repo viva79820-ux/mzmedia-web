@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 type Inquiry = {
@@ -18,8 +19,27 @@ type Inquiry = {
 };
 
 export function InquiryAdminBoard() {
+  const router = useRouter();
   const [items, setItems] = useState<Inquiry[]>([]);
   const [error, setError] = useState("");
+  const [pending, setPending] = useState("");
+
+  async function openBrief(inquiryId: string) {
+    setPending(inquiryId);
+    setError("");
+    const response = await fetch("/api/office/briefs", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ inquiryId }),
+    });
+    const body = (await response.json()) as { job?: { id: string }; error?: string };
+    setPending("");
+    if (!response.ok || !body.job) {
+      setError(body.error || "미팅 브리프를 만들지 못했습니다.");
+      return;
+    }
+    router.push(`/office/agent/${body.job.id}`);
+  }
 
   useEffect(() => {
     fetch("/api/admin/inquiries")
@@ -73,6 +93,14 @@ export function InquiryAdminBoard() {
               <p className="mt-3 whitespace-pre-wrap text-sm text-ink">
                 {item.message}
               </p>
+              <button
+                type="button"
+                className="mt-4 h-10 rounded-full bg-teal px-4 text-sm font-semibold text-white disabled:opacity-60"
+                disabled={pending === item.id}
+                onClick={() => openBrief(item.id).catch(() => setError("미팅 브리프를 만들지 못했습니다."))}
+              >
+                {pending === item.id ? "정리 중" : "미팅 브리프"}
+              </button>
             </article>
           ))
         )}

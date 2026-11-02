@@ -649,6 +649,7 @@ model OfficeJob {
   improvements OfficeImprovement[]
   approvals  OfficeApproval[]
   usage      OfficeUsage[]
+  inquiryId  String?   @unique
 
   @@index([status, createdAt])
 }

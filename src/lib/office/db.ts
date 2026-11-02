@@ -150,11 +150,19 @@ function mapApproval(row: {
   };
 }
 
-export async function createJob(goal: string) {
+export async function createJob(goal: string, inquiryId?: string | null) {
   const row = await prisma.officeJob.create({
-    data: { goal, status: "CREATED" },
+    data: { goal, status: "CREATED", inquiryId: inquiryId || null },
   });
   return row.id;
+}
+
+export async function jobIdForInquiry(inquiryId: string) {
+  const row = await prisma.officeJob.findUnique({
+    where: { inquiryId },
+    select: { id: true },
+  });
+  return row?.id ?? null;
 }
 
 export async function updateJob(id: string, patch: JobPatch) {

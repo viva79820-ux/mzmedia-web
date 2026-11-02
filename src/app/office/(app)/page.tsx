@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { MeetingBriefs } from "@/components/office/MeetingBriefs";
 import StatusBadge from "@/components/office/StatusBadge";
 import { formatUsd, formatWhen } from "@/lib/office/labels";
 import type { Job, Policy } from "@/lib/office/types";
@@ -51,6 +52,7 @@ export default function DashboardPage() {
           새 목표
         </Link>
       </header>
+      <MeetingBriefs />
       <section className="stats">
         <article className="card stat">
           <span>실행 중</span>

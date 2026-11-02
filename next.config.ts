@@ -9,6 +9,7 @@ const nextConfig: NextConfig = {
     "/api/office/memory": ["./prisma/migrations/20261103000000_ai_office/migration.sql"],
     "/api/office/improvements": ["./prisma/migrations/20261103000000_ai_office/migration.sql"],
     "/api/office/improvements/[id]": ["./prisma/migrations/20261103000000_ai_office/migration.sql"],
+    "/api/office/briefs": ["./prisma/migrations/20261103000000_ai_office/migration.sql"],
   },
   async redirects() {
     return [
