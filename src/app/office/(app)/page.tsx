@@ -81,7 +81,9 @@ function OfficeTalk() {
   }
 
   return (
-    <section className="card stack" style={{ marginBottom: 18 }}>
+    <section className="card talk" style={{ marginBottom: 18 }}>
+      <img className="agent-face" src="/office/agent.png" alt="엠지 에이전트" />
+      <div className="stack">
       <p className="kicker">대화</p>
       <h2>대표 대화</h2>
       <p>{opener || "아침 보고를 불러오는 중입니다."}</p>
@@ -115,6 +117,7 @@ function OfficeTalk() {
           {busy ? "처리 중" : "말하기"}
         </button>
       </form>
+      </div>
     </section>
   );
 }
