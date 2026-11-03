@@ -29,6 +29,7 @@ export function OfficeFrame({ children }: { children: React.ReactNode }) {
       <div className="shell">
         <aside className="side">
           <div className="brand">
+            <img className="agent-face" src="/office/agent.png" alt="엠지 에이전트" />
             <small>MZ MEDIA</small>
             <strong>AI Office</strong>
           </div>
