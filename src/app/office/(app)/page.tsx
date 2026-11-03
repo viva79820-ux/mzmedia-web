@@ -1,11 +1,123 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { MeetingBriefs } from "@/components/office/MeetingBriefs";
 import StatusBadge from "@/components/office/StatusBadge";
 import { formatUsd, formatWhen } from "@/lib/office/labels";
 import type { Job, Policy } from "@/lib/office/types";
+
+type PendingAgent = {
+  id: string;
+  name: string;
+  version: number;
+  businessDomain: string;
+  allowedTools: string[];
+  testResult: string;
+  deferredNote: string;
+};
+
+function OfficeTalk() {
+  const [opener, setOpener] = useState("");
+  const [llm, setLlm] = useState(false);
+  const [pending, setPending] = useState<PendingAgent[]>([]);
+  const [reply, setReply] = useState("");
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  async function load() {
+    const response = await fetch("/api/office/chat");
+    const body = (await response.json()) as { opener?: string; llm?: boolean; pending?: PendingAgent[]; error?: string };
+    if (!response.ok) {
+      setError(body.error || "대화를 불러오지 못했습니다.");
+      return;
+    }
+    setOpener(body.opener || "");
+    setLlm(Boolean(body.llm));
+    setPending(body.pending || []);
+  }
+
+  useEffect(() => {
+    load().catch(() => setError("대화를 불러오지 못했습니다."));
+  }, []);
+
+  async function onSubmit(event: FormEvent) {
+    event.preventDefault();
+    setBusy(true);
+    setError("");
+    const response = await fetch("/api/office/chat", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ message }),
+    });
+    const body = (await response.json()) as { report?: string; pending?: PendingAgent[]; error?: string };
+    setBusy(false);
+    if (!response.ok) {
+      setError(body.error || "대답하지 못했습니다.");
+      return;
+    }
+    setReply(body.report || "");
+    setPending(body.pending || []);
+    setMessage("");
+  }
+
+  async function decide(id: string, decision: "approve" | "reject") {
+    setBusy(true);
+    setError("");
+    const response = await fetch(`/api/office/agents/${id}`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ decision }),
+    });
+    const body = (await response.json()) as { error?: string };
+    setBusy(false);
+    if (!response.ok) {
+      setError(body.error || "승인 처리에 실패했습니다.");
+      return;
+    }
+    setReply(decision === "approve" ? "에이전트를 활성화했습니다. 이제 그 에이전트에게 일을 맡길 수 있습니다." : "에이전트를 활성화하지 않았습니다.");
+    await load();
+  }
+
+  return (
+    <section className="card stack" style={{ marginBottom: 18 }}>
+      <p className="kicker">대화</p>
+      <h2>대표 대화</h2>
+      <p>{opener || "아침 보고를 불러오는 중입니다."}</p>
+      <p className="help">{llm ? "언어 모델이 연결되어 있습니다." : "OPENAI_API_KEY가 없습니다. 새 에이전트는 AI로 만들지 않고, 있는 조회와 지식 검색만 사용합니다."}</p>
+      {reply ? <pre className="prose">{reply}</pre> : null}
+      {pending.map((agent) => (
+        <div key={agent.id}>
+          <strong>
+            {agent.name} {agent.version}판 · {agent.businessDomain} · 승인 대기
+          </strong>
+          <p className="help">도구: {agent.allowedTools.join(", ")}</p>
+          {agent.deferredNote ? <p className="help">{agent.deferredNote}</p> : null}
+          <p className="help">{agent.testResult}</p>
+          <div className="actions">
+            <button className="btn" type="button" disabled={busy} onClick={() => decide(agent.id, "approve").catch(() => setError("승인 처리에 실패했습니다."))}>
+              승인
+            </button>
+            <button className="btn-line" type="button" disabled={busy} onClick={() => decide(agent.id, "reject").catch(() => setError("승인 처리에 실패했습니다."))}>
+              거절
+            </button>
+          </div>
+        </div>
+      ))}
+      <form className="stack" onSubmit={onSubmit}>
+        <label>
+          질문
+          <textarea value={message} onChange={(event) => setMessage(event.target.value)} placeholder="막힌 일을 정리해. 또는 영상 에이전트를 만들어." />
+        </label>
+        {error ? <p className="error">{error}</p> : null}
+        <button className="btn" type="submit" disabled={busy}>
+          {busy ? "처리 중" : "말하기"}
+        </button>
+      </form>
+    </section>
+  );
+}
 
 type Summary = {
   mode: "api" | "local";
@@ -42,6 +154,7 @@ export default function DashboardPage() {
 
   return (
     <>
+      <OfficeTalk />
       <header className="page-head">
         <div>
           <p className="kicker">Dashboard</p>

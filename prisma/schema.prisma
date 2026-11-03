@@ -650,8 +650,56 @@ model OfficeJob {
   approvals  OfficeApproval[]
   usage      OfficeUsage[]
   inquiryId  String?   @unique
+  delegations OfficeDelegation[]
 
   @@index([status, createdAt])
+}
+
+model OfficeAgent {
+  id                   String   @id @default(cuid())
+  agentKey             String
+  name                 String
+  description          String   @default("")
+  businessDomain       String   @default("")
+  systemInstructions   String   @default("") @db.Text
+  allowedTools         String   @default("[]")
+  inputSchema          String   @default("{}") @db.Text
+  outputSchema         String   @default("{}") @db.Text
+  evaluationCriteria   String   @default("") @db.Text
+  version              Int      @default(1)
+  status               String   @default("DRAFT")
+  deferredNote         String   @default("") @db.Text
+  testResult           String   @default("") @db.Text
+  decisionLog          String   @default("") @db.Text
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+  approvedAt           DateTime?
+  approvedBy           String   @default("")
+  delegations          OfficeDelegation[]
+
+  @@unique([agentKey, version])
+  @@index([status, agentKey])
+}
+
+model OfficeDelegation {
+  id               String      @id @default(cuid())
+  parentJobId      String
+  parentJob        OfficeJob   @relation(fields: [parentJobId], references: [id], onDelete: Cascade)
+  agentId          String
+  agent            OfficeAgent @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  agentVersion     Int
+  assignedGoal     String      @db.Text
+  inputData        String      @default("{}") @db.Text
+  status           String
+  outputData       String      @default("") @db.Text
+  evaluationResult String      @default("") @db.Text
+  toolCalls        String      @default("[]") @db.Text
+  startedAt        DateTime?
+  completedAt      DateTime?
+  createdAt        DateTime    @default(now())
+
+  @@index([parentJobId])
+  @@index([agentId])
 }
 
 model OfficeStep {

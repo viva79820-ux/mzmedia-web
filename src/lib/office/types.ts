@@ -23,6 +23,13 @@ export const TOOL_NAMES = [
   "evaluate_result",
   "propose_improvement",
   "request_approval",
+  "list_tasks",
+  "get_task",
+  "list_leads",
+  "list_projects",
+  "get_project",
+  "list_receivables",
+  "list_employees",
 ] as const;
 
 export type ToolName = (typeof TOOL_NAMES)[number];

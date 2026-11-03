@@ -25,6 +25,7 @@ import {
   usageSummary,
 } from "@/lib/office/db";
 import { limits, llmEnabled } from "@/lib/office/policy";
+import { runReadTool } from "@/lib/office/read-tools";
 import {
   createPlan,
   draftDocumentTool,
@@ -140,6 +141,10 @@ async function runStep(job: Job, step: Step) {
 
 async function dispatch(job: Job, step: Step): Promise<ToolOutput> {
   const policies = await listPolicies();
+  if (step.tool === "list_tasks" || step.tool === "get_task" || step.tool === "list_leads" || step.tool === "list_projects" || step.tool === "get_project" || step.tool === "list_receivables" || step.tool === "list_employees") {
+    const input = step.input && typeof step.input === "object" ? (step.input as Record<string, unknown>) : {};
+    return runReadTool(step.tool, input);
+  }
   if (step.tool === "search_memory") {
     const query = typeof (step.input as { query?: unknown }).query === "string" ? (step.input as { query: string }).query : job.goal;
     return searchMemoryTool(query);
