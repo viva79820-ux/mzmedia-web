@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 
 type PendingAgent = {
   id: string;
@@ -28,6 +28,7 @@ export default function MzmonPage() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const threadRef = useRef<HTMLDivElement>(null);
 
   async function load() {
     const response = await fetch("/api/office/chat");
@@ -45,6 +46,11 @@ export default function MzmonPage() {
   useEffect(() => {
     load().catch(() => setError("대화를 불러오지 못했습니다."));
   }, []);
+
+  useEffect(() => {
+    const node = threadRef.current;
+    if (node) node.scrollTop = node.scrollHeight;
+  }, [turns, opener, pending]);
 
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
@@ -96,7 +102,7 @@ export default function MzmonPage() {
           <p className="help">{llm ? "언어 모델이 연결되어 있습니다." : "언어 모델 키가 없습니다. 초안과 조회는 양식으로 답합니다."}</p>
         </div>
       </header>
-      <div className="thread">
+      <div className="thread" ref={threadRef}>
         <article className="bubble agent">
           <b>엠지몬</b>
           <p>{opener || "아침 현황을 불러오는 중입니다."}</p>
@@ -135,16 +141,20 @@ export default function MzmonPage() {
         ))}
       </div>
       <form className="composer" onSubmit={onSubmit}>
-        <textarea
-          value={message}
-          onChange={(event) => setMessage(event.target.value)}
-          placeholder="견적서와 제안서 초안을 써 줘."
-          rows={3}
-        />
+        <label htmlFor="mzmon-question">새 질문</label>
         {error ? <p className="error">{error}</p> : null}
-        <button className="btn" type="submit" disabled={busy}>
-          {busy ? "처리 중" : "말하기"}
-        </button>
+        <div className="composer-row">
+          <textarea
+            id="mzmon-question"
+            value={message}
+            onChange={(event) => setMessage(event.target.value)}
+            placeholder="견적서와 제안서 초안을 써 줘."
+            rows={2}
+          />
+          <button className="btn" type="submit" disabled={busy}>
+            {busy ? "처리 중" : "말하기"}
+          </button>
+        </div>
       </form>
     </section>
   );
