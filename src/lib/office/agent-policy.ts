@@ -48,6 +48,8 @@ export function filterTools(requested: unknown) {
 }
 
 export function domainOf(message: string) {
+  if (/수금|미수|청구/.test(message)) return "COLLECTIONS";
+  if (/견적|제안서|계약서/.test(message)) return "SALES";
   if (/영상|편집|촬영/.test(message)) return "VIDEO_PRODUCTION";
   if (/렌탈|노트북|장비/.test(message)) return "EQUIPMENT_RENTAL";
   if (/교육|강의|수강/.test(message)) return "EDUCATION_COURSE";
@@ -58,6 +60,8 @@ export function domainOf(message: string) {
 }
 
 export function agentKeyFor(domain: string) {
+  if (domain === "COLLECTIONS") return "collections-pm";
+  if (domain === "SALES") return "sales-pm";
   if (domain === "VIDEO_PRODUCTION") return "video-pm";
   if (domain === "EQUIPMENT_RENTAL") return "rental-pm";
   if (domain === "EDUCATION_COURSE") return "education-pm";

@@ -12,6 +12,8 @@ import {
 } from "@/lib/office/agent-policy";
 import { createJob, updateJob } from "@/lib/office/db";
 import { completeJson } from "@/lib/office/llm";
+import { AGENT_CAP, ORG, orgByKey } from "@/lib/office/org";
+import { renderDeliveryPackage } from "@/lib/office/package";
 import { llmEnabled, limits } from "@/lib/office/policy";
 import { runReadTool } from "@/lib/office/read-tools";
 import { searchMemoryTool } from "@/lib/office/tools";
@@ -66,9 +68,12 @@ export async function officeTurn(message: string) {
   if (turn.kind === "delegate") return delegateSpecialist(id, text, turn.domain);
 
   if (forbidden.length) {
-    const draft = /견적|초안/.test(text) ? "견적 초안은 전달 패키지에서 만들 수 있습니다. 이 대화는 고객에게 보내지 않았습니다." : "";
+    const draft = /견적|초안/.test(text) ? "견적 초안은 이 대화 안에 남길 수 있습니다. 고객에게는 보내지 않았습니다." : "";
     return finish(id, "COMPLETED", `${forbidden.join(", ")}은 실행하지 않습니다. ${draft}`.trim());
   }
+
+  const routed = await routeOrgWork(text);
+  if (routed) return finish(id, "COMPLETED", routed);
 
   const memory = await searchMemoryTool(text);
   if (!llmEnabled()) {
@@ -84,8 +89,58 @@ export async function officeTurn(message: string) {
   return finish(id, "COMPLETED", markdown);
 }
 
+async function routeOrgWork(message: string) {
+  if (/견적|제안서/.test(message)) {
+    const draft = renderDeliveryPackage({ request: message }, []);
+    return `수주 담당이 초안을 만들었습니다. 대표 메일함으로 보내지 않았고, 고객에게도 보내지 않았습니다.\n\n${draft}`;
+  }
+  if (/계약서/.test(message)) {
+    return [
+      "수주 담당이 계약서 초안만 적습니다. 서명과 조건 확정은 하지 않았습니다.",
+      "당사자: 엠지미디어와 고객. 고객명은 상담 기록으로 확인합니다.",
+      "범위: 대표가 승인한 견적 항목만. 승인 전이면 확인 필요.",
+      "금액: 상담 후 확정. 할인율은 적지 않습니다.",
+      "납품과 수정: 사업별 절차를 따르고, 발행과 배포는 이 초안에 넣지 않습니다.",
+      "홈스파월드, 하을·더이음은 계약 전이므로 이 초안의 계약 상대가 아닙니다.",
+    ].join("\n");
+  }
+  if (/발행|게시|포스팅/.test(message)) {
+    return [
+      "바이럴 담당이 발행 묶음 초안을 만들었습니다. 게시하지 않았습니다.",
+      "채널: 확인 필요",
+      "문안: 대표가 이 대화에 적은 요청을 초안으로 둡니다.",
+      "이미지 지시: 확인 필요",
+      "발행 시각: 확인 필요",
+      "올리는 사람은 문미영입니다. 이 초안을 발행 완료로 세지 않습니다.",
+    ].join("\n");
+  }
+  if (/일정/.test(message)) {
+    return [
+      "엠지몬이 일정 초안만 적습니다. 승인된 범위 전에는 할 일을 만들지 않습니다.",
+      "문미영에게 새 고객을 배정하지 않습니다. 현재 담당 수는 확인 전이고 상한은 4곳입니다.",
+      "1. 수주: 승인된 범위만 확정",
+      "2. 해당 사업 담당: 작업 분해와 날짜",
+      "3. 바이럴이면 문안과 시각까지. 발행은 사람이 합니다.",
+      "4. 편집 담당이 없는 영상은 대표 예외로 남깁니다.",
+    ].join("\n");
+  }
+  if (/수금|미수|청구/.test(message)) {
+    const output = await runReadTool("list_receivables", {});
+    return `수금 담당이 후보만 조회했습니다. 입금 완료로 바꾸지 않았고 독촉을 보내지 않았습니다. 2026-11 예상 수금 약 1,700만원은 예상치이며 현금 잔액이 아닙니다.\n${output.summary}\n${output.markdown || ""}`;
+  }
+  return "";
+}
+
 async function createSpecialist(jobId: string, message: string, domain: string, forceActivate: boolean) {
   const agentKey = agentKeyFor(domain);
+  const seated = orgByKey(agentKey);
+  if (seated?.mode === "SEAT") {
+    return finish(jobId, "COMPLETED", `${seated.name} 담당은 자리만 있습니다. ${seated.phase} 전에는 켜지 않습니다.`);
+  }
+  const openCount = await prisma.officeAgent.count({ where: { status: { not: "ARCHIVED" } } });
+  if (openCount >= AGENT_CAP) {
+    return finish(jobId, "COMPLETED", `담당은 ${AGENT_CAP}개까지입니다. 새 담당을 만들지 않았습니다. 겹치는 담당을 끄거나 합친 뒤에 다시 말합니다.`);
+  }
   const existing = await activeAgent(agentKey);
   if (existing) {
     return finish(jobId, "COMPLETED", `이미 활성화된 ${existing.name} ${existing.version}판이 있습니다. 같은 에이전트를 다시 만들지 않았습니다.`);
@@ -199,6 +254,25 @@ async function delegateSpecialist(jobId: string, message: string, domain: string
     },
   });
   return finish(jobId, "COMPLETED", `${agent.name} ${agent.version}판에 맡겼습니다.\n${outputText}`);
+}
+
+export async function listOrg() {
+  const keys = ORG.map((seat) => seat.agentKey);
+  const rows = await prisma.officeAgent.findMany({ where: { agentKey: { in: keys } }, orderBy: { version: "desc" } });
+  const openCount = await prisma.officeAgent.count({ where: { status: { not: "ARCHIVED" } } });
+  return {
+    cap: AGENT_CAP,
+    openCount,
+    seats: ORG.map((seat) => {
+      const row = rows.find((item) => item.agentKey === seat.agentKey);
+      return {
+        ...seat,
+        status: row?.status ?? (seat.mode === "ON" ? "ACTIVE" : "SEAT"),
+        version: row?.version ?? 1,
+        recordId: row?.id ?? seat.id,
+      };
+    }),
+  };
 }
 
 export async function listPendingAgents() {

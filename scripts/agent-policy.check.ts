@@ -2,8 +2,10 @@ import assert from "node:assert/strict";
 import {
   acceptModelAgent,
   activationDecision,
+  agentKeyFor,
   canDelegate,
   classifyTurn,
+  domainOf,
   forbiddenParts,
   specialistMayCall,
 } from "../src/lib/office/agent-policy.ts";
@@ -25,6 +27,9 @@ assert.equal(activationDecision("DRAFT", "approve").ok, false);
 const delegated = classifyTurn("영상제작 에이전트에게 담당자가 없는 영상 업무를 찾아보라고 해.");
 assert.equal(delegated.kind, "delegate");
 assert.equal(delegated.domain, "VIDEO_PRODUCTION");
+assert.equal(domainOf("견적서와 제안서를 써 줘."), "SALES");
+assert.equal(agentKeyFor("SALES"), "sales-pm");
+assert.equal(agentKeyFor("COLLECTIONS"), "collections-pm");
 
 const forbidden = forbiddenParts("고객에게 견적서를 보내고 계약을 체결해.");
 assert.ok(forbidden.includes("고객 발송"));

@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { Pool } from "pg";
+import { ORG } from "@/lib/office/org";
 
 const MIGRATION = path.join(process.cwd(), "prisma", "migrations", "20261103000000_ai_office", "migration.sql");
 
@@ -80,6 +81,26 @@ async function applyOfficeSchema() {
     await pool.query(`INSERT INTO "OfficeAgent" ("id", "agentKey", "name", "description", "businessDomain", "systemInstructions", "allowedTools", "evaluationCriteria", "version", "status", "approvedAt", "approvedBy", "updatedAt")
       SELECT 'seed-agent-pm', 'pm', '기존 PM', '지금 오피스의 계획과 초안 기능', '공통', '기존 7개 도구로 내부 초안만 만든다. 발송, 결제, 계약, 배포는 하지 않는다.', '["query_runs","save_plan","draft_document","search_memory","evaluate_result","propose_improvement","request_approval"]', '막힌 업무는 운영 DB를 읽고, 없는 값은 확인 필요로 남긴다.', 1, 'ACTIVE', CURRENT_TIMESTAMP, '기존 오피스', CURRENT_TIMESTAMP
       WHERE NOT EXISTS (SELECT 1 FROM "OfficeAgent" WHERE "agentKey" = 'pm')`);
+    for (const seat of ORG) {
+      const status = seat.mode === "ON" ? "ACTIVE" : "SEAT";
+      await pool.query(
+        `INSERT INTO "OfficeAgent" ("id", "agentKey", "name", "description", "businessDomain", "systemInstructions", "allowedTools", "evaluationCriteria", "version", "status", "approvedAt", "approvedBy", "updatedAt")
+         SELECT $1, $2, $3, $4, $5, $6, $7, $8, 1, $9, CASE WHEN $9 = 'ACTIVE' THEN CURRENT_TIMESTAMP ELSE NULL END, $10, CURRENT_TIMESTAMP
+         WHERE NOT EXISTS (SELECT 1 FROM "OfficeAgent" WHERE "agentKey" = $2)`,
+        [
+          seat.id,
+          seat.agentKey,
+          seat.name,
+          seat.duty,
+          seat.name,
+          seat.instructions,
+          JSON.stringify(seat.tools),
+          "없는 수량, 입금, 담당은 확인 필요로 남긴다. 고객 발송, 계약 체결, 결제, 배포, 발행 클릭은 하지 않는다.",
+          status,
+          status === "ACTIVE" ? "대표 조직도" : "",
+        ],
+      );
+    }
   } finally {
     await pool.end();
   }
