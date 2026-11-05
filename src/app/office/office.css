@@ -31,6 +31,16 @@
 .office-app .shell { min-height: 100vh; display: grid; grid-template-columns: 240px 1fr; }
 .office-app .side { background: var(--side); color: white; padding: 28px 18px; display: flex; flex-direction: column; gap: 12px; }
 .office-app .agent-face { width: 72px; height: 72px; image-rendering: pixelated; background: #000; display: block; }
+.office-app .mzmon { display: flex; flex-direction: column; gap: 16px; min-height: calc(100vh - 64px); }
+.office-app .mzmon-head { display: flex; gap: 16px; align-items: center; }
+.office-app .thread { display: grid; gap: 12px; }
+.office-app .turn { display: grid; gap: 8px; }
+.office-app .bubble { border: 1px solid var(--line); border-radius: 18px; padding: 14px 16px; background: var(--card); }
+.office-app .bubble.user { background: #e7eefc; }
+.office-app .bubble b { display: block; margin-bottom: 6px; font-size: 13px; }
+.office-app .bubble p { margin: 0; line-height: 1.55; }
+.office-app .composer { display: grid; gap: 8px; margin-top: auto; }
+.office-app .composer textarea { min-height: 88px; }
 .office-app .talk { display: grid; grid-template-columns: 96px 1fr; gap: 16px; align-items: start; }
 .office-app .talk .agent-face { width: 96px; height: 96px; }
 .office-app .brand small { display: block; color: rgba(255,255,255,0.55); letter-spacing: 0.14em; font-size: 11px; }

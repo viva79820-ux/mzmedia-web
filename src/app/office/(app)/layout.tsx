@@ -7,7 +7,7 @@ import "../office.css";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "MZ AI Office",
+  title: "엠지몬",
   robots: { index: false, follow: false },
 };
 

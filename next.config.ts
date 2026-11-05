@@ -14,6 +14,9 @@ const nextConfig: NextConfig = {
     "/api/office/work": ["./prisma/migrations/20261103000000_ai_office/migration.sql"],
     "/api/office/week": ["./prisma/migrations/20261103000000_ai_office/migration.sql"],
     "/api/office/morning": ["./prisma/migrations/20261103000000_ai_office/migration.sql", "./knowledge/**/*.md"],
+    "/api/office/chat": ["./prisma/migrations/20261103000000_ai_office/migration.sql", "./knowledge/**/*.md"],
+    "/api/office/backend": ["./prisma/migrations/20261103000000_ai_office/migration.sql"],
+    "/api/office/agents/[id]": ["./prisma/migrations/20261103000000_ai_office/migration.sql"],
   },
   async redirects() {
     return [

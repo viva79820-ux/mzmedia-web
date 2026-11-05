@@ -4,14 +4,8 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
 const LINKS = [
-  { href: "/office", label: "대시보드" },
-  { href: "/office/morning", label: "아침 보고" },
-  { href: "/office/week", label: "대표 일정" },
-  { href: "/office/package", label: "전달 패키지" },
-  { href: "/office/work", label: "착수·예외" },
-  { href: "/office/agent", label: "마스터 에이전트" },
-  { href: "/office/memory", label: "기억 관리" },
-  { href: "/office/improve", label: "자기개선" },
+  { href: "/office", label: "엠지몬" },
+  { href: "/office/backend", label: "백엔드" },
 ];
 
 export function OfficeFrame({ children }: { children: React.ReactNode }) {
@@ -31,7 +25,7 @@ export function OfficeFrame({ children }: { children: React.ReactNode }) {
           <div className="brand">
             <img className="agent-face" src="/office/agent.png" alt="엠지 에이전트" />
             <small>MZ MEDIA</small>
-            <strong>AI Office</strong>
+            <strong>엠지몬</strong>
           </div>
           <nav className="nav">
             {LINKS.map((link) => {
@@ -43,9 +37,6 @@ export function OfficeFrame({ children }: { children: React.ReactNode }) {
               );
             })}
           </nav>
-          <Link className="ghost" href="/admin/orders">
-            관리자 화면
-          </Link>
           <button className="ghost" type="button" onClick={() => logout().catch(() => undefined)}>
             로그아웃
           </button>
