@@ -83,6 +83,75 @@ export function approvedAskFits(message: string, earlierQuestion: string) {
   return !hasIndustry(earlierQuestion) && replyFits(message, earlierQuestion);
 }
 
+const serviceRules: { name: string; pattern: RegExp }[] = [
+  { name: "강의", pattern: /강의|교육|수강/ },
+  { name: "장비 렌탈", pattern: /렌탈|노트북|음향/ },
+  { name: "유튜브 중계", pattern: /중계/ },
+  { name: "홈페이지·IT", pattern: /홈페이지|쇼핑몰|앱|랜딩|예약 시스템|유지관리/ },
+  { name: "영상촬영 · 편집", pattern: /영상|촬영|편집|드론|숏폼|홍보영상|인터뷰/ },
+  { name: "디자인·인쇄", pattern: /디자인|인쇄|명함|로고|상세페이지|전단지|배너|카드뉴스/ },
+  { name: "온라인마케팅", pattern: /블로그|인스타|광고|마케팅|유튜브|파워링크|릴스/ },
+  { name: "회사", pattern: /회사|엠지|누구|소개/ },
+];
+
+export function classifyQuestion(message: string) {
+  const industry = industries.find((group) => group.some((word) => message.includes(word)))?.[0] ?? "";
+  const service = serviceRules.find((rule) => rule.pattern.test(message))?.name ?? "일반";
+  return { service, industry };
+}
+
+export function learnableAnswer(answer: string) {
+  const text = answer.trim();
+  if (text.length < 40) return false;
+  if (text.includes("공개된 안내만으로 확정할 수 없습니다")) return false;
+  if (pricePattern.test(text) || privatePattern.test(text)) return false;
+  return true;
+}
+
+export function cardsMatch(message: string, earlierQuestion: string) {
+  const current = classifyQuestion(message);
+  const earlier = classifyQuestion(earlierQuestion);
+  if (current.service === "일반" || current.service !== earlier.service) return false;
+  if (current.industry !== earlier.industry) return false;
+  return approvedAskFits(message, earlierQuestion);
+}
+
+export function nearbyCard(message: string, earlierQuestion: string) {
+  const current = classifyQuestion(message);
+  const earlier = classifyQuestion(earlierQuestion);
+  if (current.service === "일반" || current.service !== earlier.service) return false;
+  if (earlier.industry && current.industry !== earlier.industry) return false;
+  return true;
+}
+
+export function unsuitableStandard(text: string) {
+  return pricePattern.test(text) || privatePattern.test(text);
+}
+
+export type LearningCard = {
+  id: string;
+  question: string;
+  answer: string;
+  learnable: boolean;
+  locked: boolean;
+};
+
+export function chooseStandards(rows: LearningCard[]) {
+  const chosen: Record<string, boolean> = {};
+  for (const row of rows) if (!row.locked) chosen[row.id] = false;
+  const eligible = rows.filter((row) => row.learnable && !row.locked);
+  const seen = new Set<string>();
+  for (const row of eligible) {
+    if (seen.has(row.id)) continue;
+    const group = eligible.filter((other) => cardsMatch(row.question, other.question));
+    for (const item of group) seen.add(item.id);
+    if (rows.some((item) => item.locked && cardsMatch(row.question, item.question)) || group.length < 3) continue;
+    const best = [...group].sort((left, right) => right.answer.length - left.answer.length)[0];
+    if (best) chosen[best.id] = true;
+  }
+  return chosen;
+}
+
 export function answerFromApproved(message: string, replies: HomeReply[]): HomeAnswer | null {
   const hit = replies.find((reply) => reply.answer.trim() && approvedAskFits(message, reply.question));
   const answer = hit ? publicWords(hit.answer) : "";

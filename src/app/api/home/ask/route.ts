@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { answerFromApproved, answerHome } from "@/lib/home/answer";
-import { recentMemory, recordAsk, reusableAsks } from "@/lib/home/asks";
+import { lockedStandards, matchingMemory, promoteStandards, recordAsk } from "@/lib/home/asks";
 import { answerHomeWithModel } from "@/lib/home/model";
 import { answeredReplies } from "@/lib/home/store";
 
@@ -44,12 +44,12 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "질문이 너무 빠릅니다. 잠시 후 다시 검색해 주세요." }, { status: 429 });
   }
 
-  const [replies, approved, memory] = await Promise.all([
+  const [replies, locked, memory] = await Promise.all([
     answeredReplies(),
-    reusableAsks().catch(() => []),
-    recentMemory().catch(() => []),
+    lockedStandards(message).catch(() => []),
+    matchingMemory(message).catch(() => []),
   ]);
-  const learned = answerFromApproved(message, approved);
+  const learned = answerFromApproved(message, locked);
   const fallback = learned ?? answerHome(message, replies);
   let answer = fallback;
   if (!learned) {
@@ -62,5 +62,6 @@ export async function POST(request: Request) {
     }
   }
   await recordAsk({ question: message, answer: answer.markdown, needsInquiry: answer.needsInquiry }).catch(() => undefined);
+  await promoteStandards().catch(() => undefined);
   return NextResponse.json(answer);
 }

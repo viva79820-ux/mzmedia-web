@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/admin-auth";
-import { listAsks, saveApprovedAsk } from "@/lib/home/asks";
+import { unsuitableStandard } from "@/lib/home/answer";
+import { listAsks, promoteStandards, saveApprovedAsk } from "@/lib/home/asks";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -28,7 +29,11 @@ export async function POST(request: Request) {
   if (!id || approved.length < 2) {
     return NextResponse.json({ error: "다음 고객에게 보여줄 답을 적어 주세요." }, { status: 400 });
   }
+  if (unsuitableStandard(approved)) {
+    return NextResponse.json({ error: "금액, 월 수량, 다른 고객의 연락처나 매출은 표준 답에 넣지 않습니다." }, { status: 400 });
+  }
   const row = await saveApprovedAsk(id, approved);
+  await promoteStandards().catch(() => undefined);
   if (!row) return NextResponse.json({ error: "질문을 찾지 못했습니다." }, { status: 404 });
   return NextResponse.json({ ok: true });
 }

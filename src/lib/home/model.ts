@@ -54,7 +54,7 @@ export async function answerHomeWithModel(
     "",
     publicCatalog(),
     "",
-    remembered ? `지금까지의 공개 질문과 답\n${remembered}` : "지금까지의 공개 질문과 답\n없음",
+    remembered ? `이 질문과 같은 서비스의 기록\n${remembered}` : "이 질문과 같은 서비스의 기록\n없음. 공개 서비스 목록만 사용합니다.",
     "",
     earlier ? `이번 대화\n${earlier}` : "이번 대화\n없음",
     "",

@@ -8,6 +8,11 @@ type Row = {
   answer: string;
   needsInquiry: boolean;
   approved: string;
+  service: string;
+  industry: string;
+  learnable: boolean;
+  standard: boolean;
+  locked: boolean;
   createdAt: string;
 };
 
@@ -54,7 +59,7 @@ export default function OfficeAsksPage() {
     await load();
   }
 
-  const approved = rows.filter((row) => row.approved.trim()).length;
+  const standards = rows.filter((row) => row.standard || row.locked).length;
 
   return (
     <>
@@ -62,17 +67,17 @@ export default function OfficeAsksPage() {
         <div>
           <p className="kicker">AI에게 물어보기</p>
           <h1>고객 질문</h1>
-          <p>홈 화면에서 고객이 물은 질문과 그때 보인 답입니다. 이 기록은 다음 질문의 답에 자동으로 반영됩니다. 아래 칸은 틀린 문장을 고칠 때만 쓰면 됩니다.</p>
+          <p>질문에는 서비스와 업종이 붙습니다. 같은 종류가 3번 쌓이면 표준 답이 되고, 다음 질문은 그 답을 바탕으로 합니다. 아래 칸에 저장하면 그 문장이 표준이 되고 자동으로 덮이지 않습니다.</p>
         </div>
       </header>
       <section className="stats">
         <article className="card stat">
-          <span>확인 전</span>
-          <strong>{rows.length - approved}</strong>
+          <span>학습 제외</span>
+          <strong>{rows.filter((row) => !row.learnable && !row.locked).length}</strong>
         </article>
         <article className="card stat">
-          <span>다음 답변으로 사용</span>
-          <strong>{approved}</strong>
+          <span>표준 답</span>
+          <strong>{standards}</strong>
         </article>
         <article className="card stat">
           <span>전체</span>
@@ -87,10 +92,11 @@ export default function OfficeAsksPage() {
           <article key={row.id} className="card">
             <div className="page-head" style={{ marginBottom: 8 }}>
               <div>
-                <span className={row.approved.trim() ? "badge completed" : "badge waiting_approval"}>
-                  {row.approved.trim() ? "다음 답변으로 사용" : "확인 전"}
+                <span className={row.standard || row.locked ? "badge completed" : "badge waiting_approval"}>
+                  {row.locked ? "대표 수정" : row.standard ? "표준 답" : row.learnable ? "기록" : "학습 제외"}
                 </span>
                 <h2 style={{ marginTop: 8 }}>{row.question}</h2>
+                <p>{[row.service, row.industry].filter(Boolean).join(" · ")}</p>
               </div>
               <p>{new Date(row.createdAt).toLocaleString("ko-KR")}</p>
             </div>
