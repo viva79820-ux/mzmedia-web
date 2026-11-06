@@ -23,13 +23,15 @@ function publicCatalog() {
   return lines.join("\n");
 }
 
+export type ModelFailure = "no-key" | "http" | "bad-json" | "rejected";
+
 export async function answerHomeWithModel(
   message: string,
   memory: HomeReply[],
   history: HomeReply[],
-): Promise<HomeAnswer | null> {
+): Promise<{ answer: HomeAnswer } | { failure: ModelFailure; status?: number }> {
   const key = process.env.OPENAI_API_KEY?.trim();
-  if (!key) return null;
+  if (!key) return { failure: "no-key" };
 
   const remembered = memory
     .slice(-12)
@@ -81,15 +83,23 @@ export async function answerHomeWithModel(
   });
   if (!response.ok) {
     console.error(`home model status ${response.status}`);
-    return null;
+    return { failure: "http", status: response.status };
   }
   const payload = (await response.json()) as { choices?: { message?: { content?: string } }[] };
   const text = payload.choices?.[0]?.message?.content ?? "";
-  const draft = acceptModelDraft(JSON.parse(text) as unknown, message);
-  if (!draft) return null;
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(text) as unknown;
+  } catch {
+    return { failure: "bad-json" };
+  }
+  const draft = acceptModelDraft(parsed, message);
+  if (!draft) return { failure: "rejected" };
   return {
-    ...draft,
-    links: linksForQuestion(message),
-    usedReply: memory.length > 0,
+    answer: {
+      ...draft,
+      links: linksForQuestion(message),
+      usedReply: memory.length > 0,
+    },
   };
 }

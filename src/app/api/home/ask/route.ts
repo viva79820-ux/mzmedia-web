@@ -52,13 +52,22 @@ export async function POST(request: Request) {
   const learned = answerFromApproved(message, approved);
   const fallback = learned ?? answerHome(message, replies);
   let answer = fallback;
+  let modelState = learned ? "saved" : "fallback";
   if (!learned) {
     try {
-      answer = (await answerHomeWithModel(message, memory, history)) ?? fallback;
+      const modeled = await answerHomeWithModel(message, memory, history);
+      if ("answer" in modeled) {
+        answer = modeled.answer;
+        modelState = "model";
+      } else {
+        modelState = modeled.status ? `${modeled.failure}-${modeled.status}` : modeled.failure;
+      }
     } catch {
-      answer = fallback;
+      modelState = "error";
     }
   }
   await recordAsk({ question: message, answer: answer.markdown, needsInquiry: answer.needsInquiry }).catch(() => undefined);
-  return NextResponse.json(answer);
+  const response = NextResponse.json(answer);
+  response.headers.set("x-home-model", modelState);
+  return response;
 }
