@@ -30,6 +30,10 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
+# local homepage members and 1:1 inquiries
+/data/home-desk.json
+/data/home-members.json
+
 # env files (can opt-in for committing if needed)
 .env*
 !.env.example

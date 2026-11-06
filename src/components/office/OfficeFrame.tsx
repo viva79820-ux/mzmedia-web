@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 const LINKS = [
   { href: "/office", label: "엠지몬" },
   { href: "/office/backend", label: "백엔드" },
+  { href: "/office/inquiries", label: "1:1 문의" },
 ];
 
 export function OfficeFrame({ children }: { children: React.ReactNode }) {

@@ -14,10 +14,11 @@ export type SessionUser = {
 
 function getSecret() {
   const secret = process.env.AUTH_SECRET;
-  if (!secret || secret.length < 16) {
-    throw new Error("AUTH_SECRET must be set (min 16 characters)");
+  if (secret && secret.length >= 16) return new TextEncoder().encode(secret);
+  if (process.env.NODE_ENV !== "production") {
+    return new TextEncoder().encode("mz-local-preview-secret");
   }
-  return new TextEncoder().encode(secret);
+  throw new Error("AUTH_SECRET must be set (min 16 characters)");
 }
 
 export async function hashPassword(password: string) {

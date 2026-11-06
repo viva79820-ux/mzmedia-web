@@ -6,6 +6,7 @@ import { site } from "@/lib/site";
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticRoutes = [
     "",
+    "/explore",
     "/about",
     "/guide",
     "/services",

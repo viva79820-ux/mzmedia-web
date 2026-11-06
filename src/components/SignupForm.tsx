@@ -1,11 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
+import { safeNext } from "@/lib/safe-next";
 
 export function SignupForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const next = safeNext(searchParams.get("next"), "/jobs/new");
+  const forInquiry = next.startsWith("/mypage") || next.startsWith("/inquiries");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -26,6 +30,7 @@ export function SignupForm() {
           phone: form.get("phone"),
           email: form.get("email"),
           privacyAgreed: form.get("privacyAgreed") === "on",
+          termsAgreed: form.get("termsAgreed") === "on",
         }),
       });
       const data = (await res.json()) as { ok?: boolean; message?: string };
@@ -33,7 +38,7 @@ export function SignupForm() {
         setError(data.message ?? "회원가입에 실패했습니다.");
         return;
       }
-      router.push("/jobs/new");
+      router.push(next);
       router.refresh();
     } catch {
       setError("네트워크 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.");
@@ -47,6 +52,11 @@ export function SignupForm() {
       onSubmit={handleSubmit}
       className="rounded-[1.75rem] border border-line bg-white p-6 shadow-[0_20px_50px_rgba(16,20,26,0.06)] md:p-8"
     >
+      {forInquiry ? (
+        <p className="mb-5 rounded-2xl bg-paper px-4 py-3 text-sm leading-6 text-ink-soft">
+          1:1 문의는 회원가입 후 이용합니다. 접수한 내용과 대표 답변은 마이페이지에서 확인합니다.
+        </p>
+      ) : null}
       <div className="grid gap-5 md:grid-cols-2">
         <label className="block text-sm md:col-span-2">
           <span className="mb-2 block font-medium text-ink">아이디</span>
@@ -104,18 +114,26 @@ export function SignupForm() {
         </label>
       </div>
 
-      <label className="mt-5 flex items-start gap-3 text-sm text-ink-soft">
-        <input
-          required
-          name="privacyAgreed"
-          type="checkbox"
-          className="mt-1 h-4 w-4 accent-[var(--accent)]"
-        />
-        <span>
-          개인정보 수집·이용에 동의합니다. (아이디, 성함, 연락처, 이메일은
-          회원가입 및 공고 연락 목적으로 이용됩니다.)
-        </span>
-      </label>
+      <div className="mt-5 grid gap-3">
+        <label className="flex items-start gap-3 text-sm text-ink-soft">
+          <input required name="termsAgreed" type="checkbox" className="mt-1 h-4 w-4 accent-[var(--accent)]" />
+          <span>
+            <Link href="/terms" className="font-semibold text-accent underline" target="_blank">
+              이용약관
+            </Link>
+            에 동의합니다. 현재 문서는 시행 전 초안입니다.
+          </span>
+        </label>
+        <label className="flex items-start gap-3 text-sm text-ink-soft">
+          <input required name="privacyAgreed" type="checkbox" className="mt-1 h-4 w-4 accent-[var(--accent)]" />
+          <span>
+            <Link href="/privacy" className="font-semibold text-accent underline" target="_blank">
+              개인정보 수집·이용
+            </Link>
+            에 동의합니다. 아이디, 성함, 연락처, 이메일, 문의 내용은 회원가입과 1:1 답변에 사용됩니다.
+          </span>
+        </label>
+      </div>
 
       {error && (
         <p className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
@@ -133,7 +151,7 @@ export function SignupForm() {
 
       <p className="mt-4 text-center text-sm text-muted">
         이미 계정이 있으신가요?{" "}
-        <Link href="/auth/login" className="font-semibold text-accent">
+        <Link href={`/auth/login?next=${encodeURIComponent(next)}`} className="font-semibold text-accent">
           로그인
         </Link>
       </p>

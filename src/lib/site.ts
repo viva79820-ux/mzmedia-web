@@ -21,36 +21,21 @@ export type NavItem = {
   children?: readonly NavChild[];
 };
 
-export const nav: readonly NavItem[] = [
-  { href: "/", label: "홈" },
-  {
-    href: "/about",
-    label: "회사소개",
-    children: [
-      { href: "/about", label: "회사소개" },
-      { href: "/guide", label: "이용방법" },
-    ],
-  },
-  {
-    href: "/services",
-    label: "서비스",
-    children: [
-      { href: "/services", label: "전체 서비스" },
-      { href: "/services/online-marketing", label: "온라인마케팅" },
-      { href: "/services/video", label: "영상·촬영" },
-      { href: "/services/web-it", label: "홈페이지·IT" },
-      { href: "/services/design-print", label: "디자인·인쇄" },
-      { href: "/rental", label: "장비 렌탈" },
-    ],
-  },
+export const exploreLinks: readonly NavChild[] = [
+  { href: "/about", label: "회사소개" },
+  { href: "/guide", label: "이용방법" },
+  { href: "/services", label: "서비스" },
+  { href: "/services/online-marketing", label: "온라인마케팅" },
+  { href: "/services/video", label: "영상·촬영" },
+  { href: "/services/web-it", label: "홈페이지·IT" },
+  { href: "/services/design-print", label: "디자인·인쇄" },
   { href: "/rental", label: "장비 렌탈" },
+  { href: "/lectures", label: "강의" },
   { href: "/estimate", label: "빠른 견적" },
-  {
-    href: "/lectures",
-    label: "강의",
-    children: [
-      { href: "/lectures/online", label: "온라인 강의" },
-      { href: "/lectures/offline", label: "오프라인 강의" },
-    ],
-  },
+  { href: "/jobs", label: "작업의뢰정보" },
+];
+
+export const nav: readonly NavItem[] = [
+  { href: "/", label: "AI에게 물어보기" },
+  { href: "/explore", label: "자세히 알아보기", children: exploreLinks },
 ] as const;

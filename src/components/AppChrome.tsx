@@ -11,9 +11,19 @@ export async function AppChrome({
   const pathname = headerList.get("x-pathname") ?? "";
   const isOs = pathname === "/os" || pathname.startsWith("/os/");
   const isOffice = pathname === "/office" || pathname.startsWith("/office/");
+  const isHome = pathname === "/";
 
   if (isOs || isOffice) {
     return <>{children}</>;
+  }
+
+  if (isHome) {
+    return (
+      <div className="flex h-dvh flex-col overflow-hidden bg-paper">
+        <Header />
+        <div className="min-h-0 flex-1">{children}</div>
+      </div>
+    );
   }
 
   return (

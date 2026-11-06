@@ -3,11 +3,12 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
+import { safeNext } from "@/lib/safe-next";
 
 export function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const next = searchParams.get("next") || "/jobs";
+  const next = safeNext(searchParams.get("next"), "/jobs");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -31,7 +32,7 @@ export function LoginForm() {
         setError(data.message ?? "로그인에 실패했습니다.");
         return;
       }
-      router.push(next.startsWith("/") ? next : "/jobs");
+      router.push(next);
       router.refresh();
     } catch {
       setError("네트워크 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.");

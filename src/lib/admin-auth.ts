@@ -8,18 +8,18 @@ const ADMIN_DAYS = 7;
 
 function getSecret() {
   const secret = process.env.AUTH_SECRET;
-  if (!secret || secret.length < 16) {
-    throw new Error("AUTH_SECRET must be set (min 16 characters)");
+  if (secret && secret.length >= 16) return new TextEncoder().encode(secret);
+  if (process.env.NODE_ENV !== "production") {
+    return new TextEncoder().encode("mz-local-preview-secret");
   }
-  return new TextEncoder().encode(secret);
+  throw new Error("AUTH_SECRET must be set (min 16 characters)");
 }
 
 export function getAdminPassword() {
   const password = process.env.ADMIN_PASSWORD;
-  if (!password || password.length < 4) {
-    throw new Error("ADMIN_PASSWORD must be set");
-  }
-  return password;
+  if (password && password.length >= 4) return password;
+  if (process.env.NODE_ENV !== "production") return "local-office";
+  throw new Error("ADMIN_PASSWORD must be set");
 }
 
 export async function createAdminToken() {

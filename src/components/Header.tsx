@@ -102,6 +102,12 @@ export function Header() {
               <span className="max-w-[7rem] truncate text-sm text-muted">
                 {me.name}
               </span>
+              <Link
+                href="/mypage"
+                className="rounded-full px-3.5 py-2 text-sm font-medium text-ink-soft hover:text-ink"
+              >
+                마이페이지
+              </Link>
               <button
                 type="button"
                 onClick={handleLogout}
@@ -126,12 +132,6 @@ export function Header() {
               </Link>
             </>
           )}
-          <Link
-            href="/estimate"
-            className="rounded-full bg-accent px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-accent-deep hover:text-white"
-          >
-            빠른 견적
-          </Link>
         </div>
 
         <button
@@ -190,6 +190,12 @@ export function Header() {
             <div className="mt-3 flex flex-col gap-2 border-t border-line pt-3">
               {me ? (
                 <>
+                  <Link
+                    href="/mypage"
+                    className="rounded-full border border-line px-4 py-3 text-center text-sm font-semibold text-ink"
+                  >
+                    마이페이지
+                  </Link>
                   <button
                     type="button"
                     onClick={handleLogout}
@@ -214,12 +220,6 @@ export function Header() {
                   </Link>
                 </>
               )}
-              <Link
-                href="/estimate"
-                className="rounded-full bg-accent px-4 py-3 text-center text-sm font-semibold text-white hover:bg-accent-deep hover:text-white"
-              >
-                빠른 견적받기
-              </Link>
             </div>
           </div>
         </div>
@@ -251,7 +251,7 @@ function DesktopNavMenu({
     const el = wrapRef.current;
     if (!el) return;
     const r = el.getBoundingClientRect();
-    const width = 200;
+    const width = 240;
     const left = Math.min(
       Math.max(8, r.right - width),
       window.innerWidth - width - 8,
@@ -301,7 +301,7 @@ function DesktopNavMenu({
               top: box.top,
               left: box.left,
               zIndex: 9999,
-              width: 200,
+              width: 240,
             }}
             className="rounded-2xl border border-line bg-white p-2 shadow-[0_16px_40px_rgba(16,20,26,0.12)]"
           >

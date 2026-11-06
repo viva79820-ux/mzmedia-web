@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { PageHero } from "@/components/PageHero";
 import { SignupForm } from "@/components/SignupForm";
 
@@ -13,11 +14,13 @@ export default function SignupPage() {
       <PageHero
         eyebrow="Sign up"
         title="회원가입"
-        description="누구나 공고를 검색·열람할 수 있고, 글 작성·업체홍보는 회원만 가능합니다."
+        description="1:1 문의와 글 작성은 회원만 할 수 있습니다. 문의 현황은 마이페이지에서 확인합니다."
       />
       <section className="bg-white py-16 md:py-20">
         <div className="site-shell mx-auto max-w-xl">
-          <SignupForm />
+          <Suspense fallback={<div className="text-sm text-muted">불러오는 중…</div>}>
+            <SignupForm />
+          </Suspense>
         </div>
       </section>
     </>

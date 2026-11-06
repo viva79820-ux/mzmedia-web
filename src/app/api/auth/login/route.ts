@@ -1,10 +1,6 @@
 import { NextResponse } from "next/server";
-import {
-  createSessionToken,
-  setSessionCookie,
-  verifyPassword,
-} from "@/lib/auth";
-import { prisma } from "@/lib/db";
+import { createSessionToken, setSessionCookie } from "@/lib/auth";
+import { authenticateMember } from "@/lib/home/members";
 
 export const runtime = "nodejs";
 
@@ -25,16 +21,8 @@ export async function POST(request: Request) {
       );
     }
 
-    const user = await prisma.user.findUnique({ where: { username } });
+    const user = await authenticateMember(username, password);
     if (!user) {
-      return NextResponse.json(
-        { ok: false, message: "아이디 또는 비밀번호가 올바르지 않습니다." },
-        { status: 401 },
-      );
-    }
-
-    const valid = await verifyPassword(password, user.passwordHash);
-    if (!valid) {
       return NextResponse.json(
         { ok: false, message: "아이디 또는 비밀번호가 올바르지 않습니다." },
         { status: 401 },

@@ -1,10 +1,6 @@
 import { NextResponse } from "next/server";
-import {
-  createSessionToken,
-  hashPassword,
-  setSessionCookie,
-} from "@/lib/auth";
-import { prisma } from "@/lib/db";
+import { createSessionToken, setSessionCookie } from "@/lib/auth";
+import { registerMember } from "@/lib/home/members";
 
 export const runtime = "nodejs";
 
@@ -20,6 +16,7 @@ export async function POST(request: Request) {
       phone?: string;
       email?: string;
       privacyAgreed?: boolean;
+      termsAgreed?: boolean;
     };
 
     const username = body.username?.trim() ?? "";
@@ -28,6 +25,7 @@ export async function POST(request: Request) {
     const phone = body.phone?.trim() ?? "";
     const email = body.email?.trim().toLowerCase() ?? "";
     const privacyAgreed = Boolean(body.privacyAgreed);
+    const termsAgreed = Boolean(body.termsAgreed);
 
     if (!USERNAME_RE.test(username)) {
       return NextResponse.json(
@@ -67,6 +65,13 @@ export async function POST(request: Request) {
       );
     }
 
+    if (!termsAgreed) {
+      return NextResponse.json(
+        { ok: false, message: "이용약관에 동의해 주세요." },
+        { status: 400 },
+      );
+    }
+
     if (!privacyAgreed) {
       return NextResponse.json(
         {
@@ -77,31 +82,15 @@ export async function POST(request: Request) {
       );
     }
 
-    const existing = await prisma.user.findUnique({ where: { username } });
-    if (existing) {
-      return NextResponse.json(
-        { ok: false, message: "이미 사용 중인 아이디입니다." },
-        { status: 409 },
-      );
+    const created = await registerMember({ username, password, name, phone, email });
+    if (!created.ok) {
+      return NextResponse.json({ ok: false, message: created.message }, { status: created.status });
     }
 
-    const passwordHash = await hashPassword(password);
-    const user = await prisma.user.create({
-      data: {
-        username,
-        passwordHash,
-        name,
-        phone,
-        email,
-        privacyAgreedAt: new Date(),
-      },
-      select: { id: true, username: true, name: true },
-    });
-
-    const token = await createSessionToken(user);
+    const token = await createSessionToken(created.user);
     await setSessionCookie(token);
 
-    return NextResponse.json({ ok: true, user });
+    return NextResponse.json({ ok: true, user: created.user });
   } catch (error) {
     console.error(error);
     return NextResponse.json(
