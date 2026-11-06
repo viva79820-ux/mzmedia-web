@@ -69,7 +69,36 @@ export function replyFits(message: string, earlierQuestion: string) {
   return sharedChannels.length >= 2;
 }
 
-function publicWords(answer: string) {
+const topics = ["블로그", "인스타", "유튜브", "광고", "홈페이지", "쇼핑몰", "앱", "영상", "촬영", "편집", "숏폼", "드론", "렌탈", "노트북", "디자인", "인쇄", "로고", "강의", "중계", "상세페이지", "명함", "카드뉴스"];
+
+function hasIndustry(text: string) {
+  return industries.some((group) => group.some((word) => text.includes(word)));
+}
+
+export function approvedAskFits(message: string, earlierQuestion: string) {
+  const sameIndustry = industries.some((group) => sharesGroup(message, earlierQuestion, group));
+  if (hasIndustry(earlierQuestion) && !sameIndustry) return false;
+  const sharedTopic = topics.some((word) => message.includes(word) && earlierQuestion.includes(word));
+  if (sharedTopic) return true;
+  return !hasIndustry(earlierQuestion) && replyFits(message, earlierQuestion);
+}
+
+export function answerFromApproved(message: string, replies: HomeReply[]): HomeAnswer | null {
+  const hit = replies.find((reply) => reply.answer.trim() && approvedAskFits(message, reply.question));
+  const answer = hit ? publicWords(hit.answer) : "";
+  if (!hit || !answer) return null;
+  const aboutMoney = /얼마|비용|가격|예산|할인|견적|몇\s*건|수량/.test(message);
+  return {
+    markdown: aboutMoney || answer.includes("상담 후 확정")
+      ? answer
+      : `${answer}\n\n금액과 월 수량은 이 대화에서 확정하지 않습니다. 상담 후 확정입니다.`,
+    links: linksForQuestion(message),
+    needsInquiry: aboutMoney,
+    usedReply: true,
+  };
+}
+
+export function publicWords(answer: string) {
   return answer
     .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, "")
     .replace(/01[016789]-?\d{3,4}-?\d{4}/g, "")
@@ -111,9 +140,13 @@ export function acceptModelDraft(value: unknown, message: string): Pick<HomeAnsw
   if (!value || typeof value !== "object") return null;
   const row = value as { markdown?: unknown; needsInquiry?: unknown };
   if (typeof row.markdown !== "string") return null;
-  const cleaned = publicWords(row.markdown);
-  if (cleaned.length < 10 || cleaned.length > 1200) return null;
-  if (pricePattern.test(cleaned) || privatePattern.test(cleaned)) return null;
+  const cleaned = publicWords(row.markdown)
+    .split(/\n+|(?<=다\.|요\.|니다\.|까\?|죠\.)\s*/)
+    .map((part) => part.trim())
+    .filter((part) => part && !pricePattern.test(part) && !privatePattern.test(part))
+    .join(" ")
+    .trim();
+  if (cleaned.length < 10 || cleaned.length > 1800) return null;
   const aboutMoney = moneyQuestion.test(message);
   const needsInquiry = row.needsInquiry === true || aboutMoney;
   const markdown = aboutMoney && !cleaned.includes("상담 후 확정")

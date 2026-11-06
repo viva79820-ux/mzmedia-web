@@ -84,10 +84,14 @@ export function HomeChat() {
     const id = `q-${Date.now()}`;
     setTurns((current) => [...current, { id, question }]);
     setMessage("");
+    const history = turns
+      .filter((turn) => turn.answer?.markdown)
+      .slice(-6)
+      .map((turn) => ({ question: turn.question, answer: turn.answer?.markdown ?? "" }));
     const response = await fetch("/api/home/ask", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ message: question }),
+      body: JSON.stringify({ message: question, history }),
     });
     const body = (await response.json()) as Answer & { error?: string };
     setBusy(false);

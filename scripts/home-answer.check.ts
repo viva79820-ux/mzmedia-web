@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { acceptModelDraft, answerHome, fittingPublicReplies, linksForQuestion } from "../src/lib/home/answer.ts";
+import { acceptModelDraft, answerFromApproved, answerHome, approvedAskFits, fittingPublicReplies, linksForQuestion } from "../src/lib/home/answer.ts";
 
 const company = answerHome("엠지미디어는 어떤 회사야?", []);
 assert.equal(company.needsInquiry, false);
@@ -44,8 +44,13 @@ const notes = fittingPublicReplies("미용실인데 인스타 광고를 어떻�
 assert.equal(notes.length, 1);
 assert.doesNotMatch(notes[0] ?? "", /010/);
 
-const priced = acceptModelDraft({ markdown: "홈페이지는 150만원입니다. 상담 후 확정입니다.", needsInquiry: false }, "홈페이지 제작 비용은?");
-assert.equal(priced, null);
+const priced = acceptModelDraft(
+  { markdown: "기업 홈페이지는 회사와 서비스를 소개하는 사이트입니다. 제작비는 150만원입니다.", needsInquiry: false },
+  "홈페이지 제작 비용은?",
+);
+assert.equal(priced?.needsInquiry, true);
+assert.match(priced?.markdown ?? "", /소개하는 사이트/);
+assert.doesNotMatch(priced?.markdown ?? "", /150/);
 const explained = acceptModelDraft(
   { markdown: "기업 홈페이지는 회사와 서비스를 소개하는 사이트입니다. 페이지 구성은 상담에서 정합니다.", needsInquiry: false },
   "홈페이지 제작 비용은?",
@@ -53,5 +58,12 @@ const explained = acceptModelDraft(
 assert.equal(explained?.needsInquiry, true);
 assert.match(explained?.markdown ?? "", /상담 후 확정/);
 assert.equal(linksForQuestion("인스타그램 운영은 어떻게 하나요?")[0]?.href, "/services/online-marketing");
+
+const approved = answerFromApproved("인스타 계정 운영도 되나요?", [
+  { question: "인스타그램 운영은 어떻게 하나요?", answer: "인스타그램은 계정 톤과 발행 주기를 상담에서 정합니다." },
+]);
+assert.equal(approved?.usedReply, true);
+assert.match(approved?.markdown ?? "", /발행 주기/);
+assert.equal(approvedAskFits("학원 블로그를 어떻게 하나요?", "뷰티샵 인스타그램 운영"), false);
 
 console.log("home answer checks passed");

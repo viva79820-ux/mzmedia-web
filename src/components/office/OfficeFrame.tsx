@@ -7,6 +7,7 @@ const LINKS = [
   { href: "/office", label: "엠지몬" },
   { href: "/office/backend", label: "백엔드" },
   { href: "/office/inquiries", label: "1:1 문의" },
+  { href: "/office/asks", label: "AI에게 물어보기" },
 ];
 
 export function OfficeFrame({ children }: { children: React.ReactNode }) {
