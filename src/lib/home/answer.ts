@@ -77,6 +77,51 @@ function publicWords(answer: string) {
     .trim();
 }
 
+export function fittingPublicReplies(message: string, replies: HomeReply[]) {
+  return replies
+    .filter((reply) => reply.answer.trim() && replyFits(message, reply.question))
+    .map((reply) => publicWords(reply.answer))
+    .filter(Boolean)
+    .slice(0, 3);
+}
+
+const pricePattern = /\d[\d,]*\s*(원|만원|억)|월\s*\d{1,3}\s*(건|개|회|편|포스팅)|₩\s*\d/;
+const privatePattern = /미수|계약서|급여|직원명단|문미영|송하늬|서영준/;
+const moneyQuestion = /얼마|비용|가격|예산|할인|견적|몇\s*건|수량/;
+
+export function linksForQuestion(message: string): HomeLink[] {
+  const links: HomeLink[] = [];
+  const add = (href: string, label: string) => {
+    if (!links.some((link) => link.href === href)) links.push({ href, label });
+  };
+  if (/회사|엠지|누구|소개/.test(message)) add("/about", "회사소개");
+  if (/강의|교육|수강/.test(message)) add("/lectures", "강의");
+  if (/렌탈|노트북|음향/.test(message)) add("/rental", "장비 렌탈");
+  if (/중계/.test(message)) add("/services/youtube-live", "유튜브 중계");
+  if (/홈페이지|쇼핑몰|앱|랜딩|예약 시스템|유지관리/.test(message)) add("/services/web-it", "홈페이지·IT");
+  if (/영상|촬영|편집|드론|숏폼|홍보영상|인터뷰/.test(message)) add("/services/video", "영상촬영 · 편집");
+  if (/디자인|인쇄|명함|로고|상세페이지|전단지|배너|카드뉴스/.test(message)) add("/services/design-print", "디자인·인쇄");
+  if (/블로그|인스타|광고|마케팅|유튜브|파워링크|릴스/.test(message)) add("/services/online-marketing", "온라인마케팅");
+  if (/견적|비용|가격|얼마/.test(message)) add("/estimate", "빠른 견적");
+  if (links.length === 0) add("/services", "서비스");
+  return links.slice(0, 3);
+}
+
+export function acceptModelDraft(value: unknown, message: string): Pick<HomeAnswer, "markdown" | "needsInquiry"> | null {
+  if (!value || typeof value !== "object") return null;
+  const row = value as { markdown?: unknown; needsInquiry?: unknown };
+  if (typeof row.markdown !== "string") return null;
+  const cleaned = publicWords(row.markdown);
+  if (cleaned.length < 10 || cleaned.length > 1200) return null;
+  if (pricePattern.test(cleaned) || privatePattern.test(cleaned)) return null;
+  const aboutMoney = moneyQuestion.test(message);
+  const needsInquiry = row.needsInquiry === true || aboutMoney;
+  const markdown = aboutMoney && !cleaned.includes("상담 후 확정")
+    ? `${cleaned}\n\n금액, 월 수량, 일정은 상담 후 확정입니다.`
+    : cleaned;
+  return { markdown, needsInquiry };
+}
+
 export function answerHome(message: string, replies: HomeReply[]): HomeAnswer {
   const text = message.trim();
   const fitted = replies.find((reply) => reply.answer.trim() && replyFits(text, reply.question));
