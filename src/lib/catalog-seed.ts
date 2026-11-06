@@ -57,8 +57,8 @@ export const CATALOG_SEED: SeedCategory[] = [
   },
   {
     slug: "video",
-    name: "영상·촬영",
-    description: "기업·행사·숏폼 영상 기획부터 편집까지",
+    name: "영상촬영 · 편집",
+    description: "기업·행사·숏폼 영상의 촬영과 편집",
     sortOrder: 2,
     products: [
       { slug: "corp-promo", name: "기업 홍보영상", summary: "브랜드·기업 소개 영상", saleMode: "AUTO" },
@@ -135,6 +135,15 @@ export const CATALOG_SEED: SeedCategory[] = [
       { slug: "print-banner", name: "현수막·배너 인쇄", summary: "대형 현수막·배너", saleMode: "FIXED" },
       { slug: "print-catalog", name: "리플렛·책자·카탈로그 인쇄", summary: "제본·카탈로그 인쇄", saleMode: "CONSULT" },
       { slug: "print-etc", name: "스티커·봉투·기타 인쇄", summary: "소량·특수 인쇄", saleMode: "CONSULT" },
+    ],
+  },
+  {
+    slug: "youtube-live",
+    name: "유튜브 중계",
+    description: "행사·강연·매장 현장을 유튜브로 실시간 중계",
+    sortOrder: 5,
+    products: [
+      { slug: "youtube-live-event", name: "유튜브 실시간 중계", summary: "현장 송출과 중계 구성. 범위와 금액은 상담 후 확정", saleMode: "CONSULT" },
     ],
   },
 ];

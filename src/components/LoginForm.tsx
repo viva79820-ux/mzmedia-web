@@ -9,6 +9,7 @@ export function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const next = safeNext(searchParams.get("next"), "/jobs");
+  const forInquiry = next.startsWith("/inquiries");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -46,6 +47,11 @@ export function LoginForm() {
       onSubmit={handleSubmit}
       className="rounded-[1.75rem] border border-line bg-white p-6 shadow-[0_20px_50px_rgba(16,20,26,0.06)] md:p-8"
     >
+      {forInquiry ? (
+        <p className="mb-5 rounded-2xl bg-paper px-4 py-3 text-sm leading-6 text-ink-soft">
+          아이디가 있으면 로그인합니다. 없으면 아래 회원가입으로 만든 뒤 1:1 문의를 남깁니다.
+        </p>
+      ) : null}
       <label className="block text-sm">
         <span className="mb-2 block font-medium text-ink">아이디</span>
         <input
@@ -80,12 +86,12 @@ export function LoginForm() {
         {loading ? "로그인 중…" : "로그인"}
       </button>
 
-      <p className="mt-4 text-center text-sm text-muted">
-        계정이 없으신가요?{" "}
-        <Link href="/auth/signup" className="font-semibold text-accent">
-          회원가입
-        </Link>
-      </p>
+      <Link
+        href={`/auth/signup?next=${encodeURIComponent(next)}`}
+        className="mt-3 flex w-full items-center justify-center rounded-full border border-line px-5 py-3.5 text-sm font-semibold text-ink transition hover:border-accent hover:text-accent"
+      >
+        회원가입
+      </Link>
     </form>
   );
 }

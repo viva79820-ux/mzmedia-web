@@ -21,21 +21,28 @@ export type NavItem = {
   children?: readonly NavChild[];
 };
 
+export const serviceLinks: readonly NavChild[] = [
+  { href: "/services/online-marketing", label: "온라인마케팅" },
+  { href: "/services/video", label: "영상촬영 · 편집" },
+  { href: "/services/web-it", label: "홈페이지·IT" },
+  { href: "/services/design-print", label: "디자인·인쇄" },
+  { href: "/services/youtube-live", label: "유튜브 중계" },
+  { href: "/rental", label: "장비 렌탈" },
+];
+
+export const lectureLinks: readonly NavChild[] = [
+  { href: "/lectures/online", label: "온라인 강의" },
+  { href: "/lectures/offline", label: "오프라인 강의" },
+];
+
 export const exploreLinks: readonly NavChild[] = [
   { href: "/about", label: "회사소개" },
   { href: "/guide", label: "이용방법" },
-  { href: "/services", label: "서비스" },
-  { href: "/services/online-marketing", label: "온라인마케팅" },
-  { href: "/services/video", label: "영상·촬영" },
-  { href: "/services/web-it", label: "홈페이지·IT" },
-  { href: "/services/design-print", label: "디자인·인쇄" },
-  { href: "/rental", label: "장비 렌탈" },
-  { href: "/lectures", label: "강의" },
   { href: "/estimate", label: "빠른 견적" },
-  { href: "/jobs", label: "작업의뢰정보" },
+  { href: "/inquiries", label: "1:1 문의" },
 ];
 
 export const nav: readonly NavItem[] = [
   { href: "/", label: "AI에게 물어보기" },
-  { href: "/explore", label: "자세히 알아보기", children: exploreLinks },
+  { href: "/explore", label: "자세히 알아보기" },
 ] as const;

@@ -2,32 +2,44 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Reveal } from "@/components/Reveal";
-import { ensureCatalogSeeded } from "@/lib/catalog-db";
-import { prisma } from "@/lib/db";
-import { site } from "@/lib/site";
+import { exploreLinks, lectureLinks, serviceLinks, site } from "@/lib/site";
 
-export const dynamic = "force-dynamic";
-
-const fallbackCategories = [
+const serviceCards = [
   {
-    slug: "online-marketing",
+    href: "/services/online-marketing",
     name: "온라인마케팅",
     description: "블로그·SNS·광고 운영과 콘텐츠 제작",
+    action: "상품 보기 →",
   },
   {
-    slug: "video",
-    name: "영상·촬영",
-    description: "기업·행사·숏폼 영상 기획부터 편집까지",
+    href: "/services/video",
+    name: "영상촬영 · 편집",
+    description: "기업·행사·숏폼 영상의 촬영과 편집",
+    action: "상품 보기 →",
   },
   {
-    slug: "web-it",
+    href: "/services/web-it",
     name: "홈페이지·IT",
     description: "웹사이트·시스템·앱·자동화 개발",
+    action: "상품 보기 →",
   },
   {
-    slug: "design-print",
+    href: "/services/design-print",
     name: "디자인·인쇄",
     description: "디자인 제작과 인쇄물 제작",
+    action: "상품 보기 →",
+  },
+  {
+    href: "/services/youtube-live",
+    name: "유튜브 중계",
+    description: "행사·강연·매장 현장을 유튜브로 실시간 중계합니다. 범위와 금액은 상담 후 확정입니다.",
+    action: "상품 보기 →",
+  },
+  {
+    href: "/rental",
+    name: "장비 렌탈",
+    description: "노트북, 모니터, 행사 음향, 방송 장비. 일정 확인 후 대여합니다.",
+    action: "렌탈 보기 →",
   },
 ];
 
@@ -36,28 +48,53 @@ export const metadata: Metadata = {
   description: site.description,
 };
 
-export default async function ExplorePage() {
-  let categories = fallbackCategories;
-  try {
-    await ensureCatalogSeeded();
-    const rows = await prisma.serviceCategory.findMany({
-      where: { published: true, parentId: null },
-      orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
-      take: 4,
-    });
-    if (rows.length > 0) {
-      categories = rows.map((row) => ({
-        slug: row.slug,
-        name: row.name,
-        description: row.description,
-      }));
-    }
-  } catch {
-    // DB 미연결 시에도 홈은 정적 카탈로그 안내를 유지
-  }
-
+export default function ExplorePage() {
   return (
     <>
+      <section className="border-b border-line bg-paper pt-8 pb-6">
+        <div className="site-shell">
+          <h1 className="font-display text-2xl font-bold tracking-tight text-ink md:text-3xl">자세히 알아보기</h1>
+          <nav className="mt-4 flex flex-wrap gap-2">
+            {exploreLinks.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="rounded-full border border-line bg-white px-4 py-2 text-sm font-semibold text-ink transition hover:border-accent hover:text-accent"
+              >
+                {link.label}
+              </Link>
+            ))}
+          </nav>
+          <div className="mt-5">
+            <p className="text-xs font-semibold text-muted">서비스</p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {serviceLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className="rounded-full bg-white px-3 py-1.5 text-sm text-ink-soft ring-1 ring-line transition hover:text-accent"
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </div>
+          </div>
+          <div className="mt-4">
+            <p className="text-xs font-semibold text-muted">강의</p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {lectureLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className="rounded-full bg-white px-3 py-1.5 text-sm text-ink-soft ring-1 ring-line transition hover:text-accent"
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
       <section className="border-b border-line bg-white pt-8 pb-12 md:pt-10 md:pb-16">
         <div className="site-shell">
           <Reveal>
@@ -72,11 +109,11 @@ export default async function ExplorePage() {
             </p>
           </Reveal>
 
-          <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-            {categories.map((category, index) => (
-              <Reveal key={category.slug} delay={(Math.min(index + 1, 3) as 1 | 2 | 3)}>
+          <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {serviceCards.map((category, index) => (
+              <Reveal key={category.href} delay={(Math.min(index + 1, 3) as 1 | 2 | 3)}>
                 <Link
-                  href={`/services/${category.slug}`}
+                  href={category.href}
                   className="block h-full border-t-2 border-ink pt-6 transition hover:border-accent"
                 >
                   <h3 className="font-display text-xl font-bold text-ink">
@@ -86,23 +123,11 @@ export default async function ExplorePage() {
                     {category.description}
                   </p>
                   <p className="mt-5 text-sm font-semibold text-accent">
-                    상품 보기 →
+                    {category.action}
                   </p>
                 </Link>
               </Reveal>
             ))}
-            <Reveal delay={3}>
-              <Link
-                href="/rental"
-                className="block h-full border-t-2 border-ink pt-6 transition hover:border-accent"
-              >
-                <h3 className="font-display text-xl font-bold text-ink">장비 렌탈</h3>
-                <p className="mt-3 text-sm leading-relaxed text-muted">
-                  노트북, 모니터, 행사 음향, 방송 장비. 일정 확인 후 대여합니다.
-                </p>
-                <p className="mt-5 text-sm font-semibold text-accent">렌탈 보기 →</p>
-              </Link>
-            </Reveal>
           </div>
         </div>
       </section>

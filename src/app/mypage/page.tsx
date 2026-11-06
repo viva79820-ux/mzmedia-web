@@ -10,15 +10,9 @@ export const metadata: Metadata = {
   description: "1:1 문의 접수와 답변을 확인합니다.",
 };
 
-export default async function MyPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ question?: string }>;
-}) {
+export default async function MyPage() {
   const user = await getSessionUser();
-  const { question = "" } = await searchParams;
-  const query = question.trim() ? `?question=${encodeURIComponent(question.trim())}` : "";
-  if (!user) redirect(`/auth/signup?next=${encodeURIComponent(`/mypage${query}`)}`);
+  if (!user) redirect("/auth/login?next=/mypage");
 
   return (
     <section className="bg-paper py-12 md:py-16">
@@ -28,7 +22,7 @@ export default async function MyPage({
         <p className="mt-3 text-sm leading-6 text-muted">
           {user.name}님의 문의입니다. 대표가 답하면 이 화면에 표시됩니다. 문자나 이메일로 자동 발송하지 않습니다.
         </p>
-        <MyInquiries question={question.trim()} />
+        <MyInquiries />
       </div>
     </section>
   );

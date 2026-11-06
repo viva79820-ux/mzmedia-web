@@ -8,7 +8,7 @@ import { prisma } from "@/lib/db";
 export const metadata: Metadata = {
   title: "서비스",
   description:
-    "온라인마케팅, 영상·촬영, 홈페이지·IT, 디자인·인쇄, 장비 렌탈을 한곳에서 확인하세요.",
+    "온라인마케팅, 영상촬영 · 편집, 홈페이지·IT, 디자인·인쇄, 유튜브 중계, 장비 렌탈을 한곳에서 확인하세요.",
 };
 
 export const dynamic = "force-dynamic";
