@@ -18,17 +18,58 @@ type Turn = {
 };
 
 const samples = [
-  "엠지미디어는 어떤 회사야?",
-  "엠지미디어의 상품은?",
-  "우리 회사는 뷰티샵인데 어떤 광고 패키지를 추천해?",
+  "우리 회사에 필요한 서비스는?",
+  "홈페이지 제작 비용은?",
+  "기업 홍보영상 제작 문의",
+  "블로그 콘텐츠 제작이 되나요?",
+  "블로그 월간 관리를 맡길 수 있나요?",
+  "인스타그램 운영은 어떻게 하나요?",
+  "릴스·숏폼 제작이 가능한가요?",
+  "네이버 파워링크 관리가 되나요?",
+  "메타 광고 운영을 맡길 수 있나요?",
+  "유튜브 채널 관리가 가능한가요?",
+  "구글·유튜브 광고도 하나요?",
+  "행사 영상 촬영이 되나요?",
+  "인터뷰 촬영과 편집이 가능한가요?",
+  "드론 촬영도 하나요?",
+  "유튜브 실시간 중계는 어떻게 하나요?",
+  "기업 홈페이지를 새로 만들 수 있나요?",
+  "랜딩페이지 제작이 되나요?",
+  "쇼핑몰 제작이 가능한가요?",
+  "모바일 앱 개발도 하나요?",
+  "예약 시스템 개발이 가능한가요?",
+  "상세페이지 디자인이 되나요?",
+  "로고·브랜드 디자인을 맡길 수 있나요?",
+  "명함·전단지 인쇄가 되나요?",
+  "현수막·배너 제작이 가능한가요?",
+  "노트북 렌탈이 되나요?",
+  "행사 음향 장비를 빌릴 수 있나요?",
+  "온라인 강의는 어떤 내용인가요?",
+  "오프라인 강의는 어떻게 신청하나요?",
+  "견적은 어떻게 받나요?",
+  "엠지미디어는 어떤 회사인가요?",
 ];
+
+function pickSamples(list: readonly string[], count: number) {
+  const copy = [...list];
+  for (let index = copy.length - 1; index > 0; index -= 1) {
+    const swap = Math.floor(Math.random() * (index + 1));
+    [copy[index], copy[swap]] = [copy[swap], copy[index]];
+  }
+  return copy.slice(0, count);
+}
 
 export function HomeChat() {
   const [turns, setTurns] = useState<Turn[]>([]);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [shownSamples, setShownSamples] = useState<string[]>([]);
   const threadRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setShownSamples(pickSamples(samples, 3));
+  }, []);
 
   useEffect(() => {
     const node = threadRef.current;
@@ -72,20 +113,24 @@ export function HomeChat() {
   const composer = (
     <form className={started ? "shrink-0 border-t border-line bg-paper" : "w-full"} onSubmit={onSubmit}>
       <div className={`mx-auto w-full max-w-3xl text-left ${started ? "px-4 py-3" : ""}`}>
-        <label htmlFor="home-question" className="mb-1 block text-xs font-semibold text-ink-soft">
-          새 질문
-        </label>
-        <div className="flex items-center gap-2">
+        {started ? (
+          <label htmlFor="home-question" className="mb-1 block text-xs font-semibold text-ink-soft">
+            새 질문
+          </label>
+        ) : null}
+        <div className={started ? "flex items-center gap-2" : "flex items-center gap-3 rounded-2xl border border-line bg-white px-3 py-2"}>
           <textarea
             id="home-question"
             value={message}
             onChange={(event) => setMessage(event.target.value)}
             onKeyDown={onQuestionKeyDown}
-            rows={2}
-            placeholder="우리 업종에 맞는 마케팅을 물어보세요."
-            className="min-w-0 flex-1 resize-none rounded-2xl border border-line bg-white px-4 py-3 text-sm text-ink"
+            rows={started ? 2 : 1}
+            placeholder="어떤 도움이 필요하신가요?"
+            className={started
+              ? "min-w-0 flex-1 resize-none rounded-2xl border border-line bg-white px-4 py-3 text-sm text-ink"
+              : "min-w-0 flex-1 resize-none bg-transparent px-2 py-3 text-sm text-ink outline-none"}
           />
-          <button type="submit" disabled={busy} className="rounded-full bg-accent px-4 py-3 text-sm font-semibold text-white disabled:opacity-60">
+          <button type="submit" disabled={busy} className="shrink-0 rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-60">
             {busy ? "검색 중" : "검색"}
           </button>
         </div>
@@ -138,14 +183,16 @@ export function HomeChat() {
           <div className="mx-auto flex w-full max-w-3xl flex-col items-center gap-5 text-center">
             <div>
               <p className="text-sm font-semibold tracking-[0.16em] text-accent">MZ MEDIA</p>
-              <h1 className="mt-2 text-3xl font-bold tracking-tight text-ink">마케팅을 물어보세요</h1>
-              <p className="mt-2 text-sm leading-6 text-muted">
-                회사와 상품은 공개된 안내로 답합니다. 업종과 범위가 구체적인 문의는 근거가 있을 때만 답하고, 없으면 1대1 문의로 받습니다.
+              <h1 className="mt-2 text-3xl font-bold tracking-tight text-ink md:text-4xl">비즈니스의 고민을 물어보세요</h1>
+              <p className="mt-3 text-sm leading-6 text-muted">
+                마케팅부터 영상·디자인·웹·앱 개발까지.
+                <br />
+                기업에 필요한 솔루션을 엠지미디어에서 찾아보세요.
               </p>
             </div>
             {composer}
             <div className="flex flex-wrap justify-center gap-2">
-              {samples.map((sample) => (
+              {shownSamples.map((sample) => (
                 <button
                   key={sample}
                   type="button"
@@ -156,9 +203,6 @@ export function HomeChat() {
                 </button>
               ))}
             </div>
-            <p className="text-xs text-muted">
-              <Link href="/inquiries" className="underline">1:1 문의</Link>
-            </p>
           </div>
         </div>
       )}
