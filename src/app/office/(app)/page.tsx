@@ -31,17 +31,19 @@ export default function MzmonPage() {
   const [busy, setBusy] = useState(false);
   const threadRef = useRef<HTMLDivElement>(null);
 
-  async function load() {
+  async function load(keep?: Turn) {
     const response = await fetch("/api/office/chat");
     const body = (await response.json()) as { opener?: string; llm?: boolean; pending?: PendingAgent[]; turns?: Turn[]; error?: string };
     if (!response.ok) {
       setError(body.error || "대화를 불러오지 못했습니다.");
+      setOpener((current) => current || "아침 현황은 잠시 확인하지 못했습니다. 질문은 이어서 할 수 있습니다.");
       return;
     }
     setOpener(body.opener || "");
     setLlm(Boolean(body.llm));
     setPending(body.pending || []);
-    setTurns(body.turns || []);
+    const turns = body.turns || [];
+    setTurns(keep && !turns.some((turn) => turn.id === keep.id) ? [keep, ...turns] : turns);
   }
 
   useEffect(() => {
@@ -53,25 +55,40 @@ export default function MzmonPage() {
     if (node) node.scrollTop = node.scrollHeight;
   }, [turns, opener, pending]);
 
+  function remember(turn: Turn) {
+    setTurns((current) => [turn, ...current.filter((item) => item.id !== turn.id)]);
+  }
+
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
     const text = message.trim();
-    if (!text) return;
+    if (!text || busy) return;
     setBusy(true);
     setError("");
-    const response = await fetch("/api/office/chat", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ message: text }),
-    });
-    const body = (await response.json()) as { error?: string };
-    setBusy(false);
-    if (!response.ok) {
-      setError(body.error || "대답하지 못했습니다.");
-      return;
+    try {
+      const response = await fetch("/api/office/chat", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ message: text }),
+      });
+      const body = (await response.json()) as { error?: string; jobId?: string; report?: string; status?: string };
+      const turn: Turn = {
+        id: body.jobId || `local-${Date.now()}`,
+        goal: text,
+        report: body.report || body.error || "답을 적지 못했습니다.",
+        status: body.status || (response.ok ? "COMPLETED" : "FAILED"),
+        createdAt: new Date().toISOString(),
+        ledger: body.status === "WAITING_APPROVAL" ? { summary: body.report || "" } : null,
+      };
+      remember(turn);
+      if (!response.ok) setError(body.error || "대답하지 못했습니다.");
+      else setMessage("");
+      await load(turn);
+    } catch {
+      setError("대답하지 못했습니다.");
+    } finally {
+      setBusy(false);
     }
-    setMessage("");
-    await load();
   }
 
   async function fileLedger(id: string, decision: "commit" | "hold") {
@@ -131,10 +148,9 @@ export default function MzmonPage() {
               <b>대표</b>
               <p>{turn.goal}</p>
             </article>
-            {turn.report ? (
-              <article className="bubble agent">
+            <article className="bubble agent">
                 <b>엠지몬</b>
-                <pre className="prose">{turn.report}</pre>
+                <pre className="prose">{turn.report || "답을 적지 못했습니다."}</pre>
                 {turn.ledger && turn.status === "WAITING_APPROVAL" ? (
                   <div className="actions">
                     <button className="btn" type="button" disabled={busy} onClick={() => fileLedger(turn.id, "commit").catch(() => setError("장부에 넣지 못했습니다."))}>
@@ -146,7 +162,6 @@ export default function MzmonPage() {
                   </div>
                 ) : null}
               </article>
-            ) : null}
           </div>
         ))}
         {pending.map((agent) => (
@@ -176,6 +191,12 @@ export default function MzmonPage() {
             id="mzmon-question"
             value={message}
             onChange={(event) => setMessage(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" && !event.shiftKey) {
+                event.preventDefault();
+                event.currentTarget.form?.requestSubmit();
+              }
+            }}
             placeholder="한빛식품 잔금 150만 오늘 입금"
             rows={2}
           />

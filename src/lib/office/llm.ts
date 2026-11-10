@@ -49,5 +49,11 @@ export async function completeJson(input: { jobId: string; system: string; user:
   }
 
   const text = payload.choices?.[0]?.message?.content ?? "";
-  return { skipped: false as const, json: JSON.parse(text) as unknown, model, costUsd };
+  let json: unknown = {};
+  try {
+    json = JSON.parse(text);
+  } catch {
+    json = { markdown: text };
+  }
+  return { skipped: false as const, json, model, costUsd };
 }

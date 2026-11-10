@@ -51,9 +51,18 @@ async function activeAgent(agentKey: string) {
 export async function officeTurn(message: string) {
   const text = message.trim();
   if (text.length < 2) throw new Error("질문을 적어 주세요.");
+  const id = await createJob(text);
+  try {
+    return await speak(id, text);
+  } catch (error) {
+    const report = error instanceof Error ? error.message : "대답하지 못했습니다.";
+    return finish(id, "FAILED", report);
+  }
+}
+
+async function speak(id: string, text: string) {
   const ledger = parseLedger(text);
   if (ledger) {
-    const id = await createJob(text);
     if (ledger.type === "clarify") return finish(id, "COMPLETED", ledger.question);
     const report = `${ledger.draft.summary}\n확인하면 장부에 넣습니다. 그 전에는 숫자를 바꾸지 않습니다.`;
     await updateJob(id, {
@@ -66,7 +75,6 @@ export async function officeTurn(message: string) {
   }
   const turn = classifyTurn(text);
   const forbidden = forbiddenParts(text);
-  const id = await createJob(text);
   await updateJob(id, { status: "RUNNING", analysis: turn.kind, startedAt: new Date().toISOString() });
 
   if (turn.kind === "blocked_work") {
@@ -99,7 +107,9 @@ export async function officeTurn(message: string) {
     system: "엠지미디어 PM이다. JSON {\"markdown\":\"\"} 만 반환한다. 없는 수치는 확인 필요라고 쓴다. 발송, 결제, 계약 체결을 했다고 쓰지 않는다.",
     user: `${text}\n\n지식:\n${memory.markdown || "없음"}`,
   });
-  const markdown = result && !result.skipped && typeof (result.json as { markdown?: unknown }).markdown === "string" ? (result.json as { markdown: string }).markdown : memory.markdown || "확인 필요";
+  if (result?.skipped) return finish(id, "COMPLETED", result.reason);
+  const written = result && typeof (result.json as { markdown?: unknown }).markdown === "string" ? (result.json as { markdown: string }).markdown.trim() : "";
+  const markdown = written || memory.markdown || "기록에서 바로 답할 내용이 없습니다. 수금과 지출은 고객명과 금액을 같이 말해 주세요.";
   return finish(id, "COMPLETED", markdown);
 }
 
@@ -296,8 +306,9 @@ export async function listPendingAgents() {
 
 export async function recentTurns() {
   const jobs = await prisma.officeJob.findMany({
+    where: { inquiryId: null },
     orderBy: { createdAt: "desc" },
-    take: 8,
+    take: 20,
     select: { id: true, goal: true, report: true, status: true, analysis: true, createdAt: true },
   });
   return jobs.map((job) => ({
