@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
 export default async function AdminPage() {
   if (await isAdminAuthed()) {
-    redirect("/office/erp");
+    redirect("/office");
   }
 
   return (
@@ -19,7 +19,7 @@ export default async function AdminPage() {
       <PageHero
         eyebrow="Admin"
         title="관리자"
-        description="관리자 비밀번호로 들어가면 대시보드, 수금·미수, 지출을 볼 수 있습니다."
+        description="관리자 비밀번호로 들어가면 엠지몬에게 말하고, 장부의 대시보드, 수금·미수, 지출을 볼 수 있습니다."
       />
       <section className="bg-white py-16 md:py-20">
         <div className="site-shell mx-auto max-w-md">

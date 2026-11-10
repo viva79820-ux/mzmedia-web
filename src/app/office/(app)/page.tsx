@@ -18,6 +18,7 @@ type Turn = {
   report: string;
   status: string;
   createdAt: string;
+  ledger: { summary: string } | null;
 };
 
 export default function MzmonPage() {
@@ -73,6 +74,23 @@ export default function MzmonPage() {
     await load();
   }
 
+  async function fileLedger(id: string, decision: "commit" | "hold") {
+    setBusy(true);
+    setError("");
+    const response = await fetch("/api/office/ledger", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ jobId: id, decision }),
+    });
+    const body = (await response.json()) as { error?: string };
+    setBusy(false);
+    if (!response.ok) {
+      setError(body.error || "장부에 넣지 못했습니다.");
+      return;
+    }
+    await load();
+  }
+
   async function decide(id: string, decision: "approve" | "reject") {
     setBusy(true);
     setError("");
@@ -117,6 +135,16 @@ export default function MzmonPage() {
               <article className="bubble agent">
                 <b>엠지몬</b>
                 <pre className="prose">{turn.report}</pre>
+                {turn.ledger && turn.status === "WAITING_APPROVAL" ? (
+                  <div className="actions">
+                    <button className="btn" type="button" disabled={busy} onClick={() => fileLedger(turn.id, "commit").catch(() => setError("장부에 넣지 못했습니다."))}>
+                      장부에 넣기
+                    </button>
+                    <button className="btn-line" type="button" disabled={busy} onClick={() => fileLedger(turn.id, "hold").catch(() => setError("장부에 넣지 못했습니다."))}>
+                      넣지 않기
+                    </button>
+                  </div>
+                ) : null}
               </article>
             ) : null}
           </div>
@@ -148,7 +176,7 @@ export default function MzmonPage() {
             id="mzmon-question"
             value={message}
             onChange={(event) => setMessage(event.target.value)}
-            placeholder="견적서와 제안서 초안을 써 줘."
+            placeholder="한빛식품 잔금 150만 오늘 입금"
             rows={2}
           />
           <button className="btn" type="submit" disabled={busy}>

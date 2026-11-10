@@ -51,7 +51,9 @@ body:has(.mzmon) { height: 100%; overflow: hidden; }
 .office-app .talk .agent-face { width: 96px; height: 96px; }
 .office-app .brand small { display: block; color: rgba(255,255,255,0.55); letter-spacing: 0.14em; font-size: 11px; }
 .office-app .brand strong { display: block; margin-top: 6px; font-size: 20px; }
-.office-app .nav { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+.office-app .nav { display: flex; flex-direction: column; gap: 16px; margin-bottom: 12px; flex: 1; min-height: 0; overflow: auto; }
+.office-app .nav-group { display: grid; gap: 4px; }
+.office-app .nav-label { padding: 0 14px; color: rgba(255,255,255,0.38); font-size: 11px; letter-spacing: 0.14em; }
 .office-app .nav a, .office-app .ghost { border-radius: 999px; padding: 10px 14px; text-decoration: none; color: rgba(255,255,255,0.78); }
 .office-app .nav a.active, .office-app .nav a:hover { background: rgba(255,255,255,0.08); color: white; }
 .office-app .side .ghost { border: 1px solid rgba(255,255,255,0.16); background: transparent; color: white; cursor: pointer; text-align: left; }
@@ -80,7 +82,7 @@ body:has(.mzmon) { height: 100%; overflow: hidden; }
 .office-app .btn:disabled { opacity: 0.55; cursor: wait; }
 .office-app .btn-line { background: white; border: 1px solid var(--line); color: var(--ink); }
 .office-app .btn-line.danger { color: var(--bad); }
-.office-app .actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.office-app .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
 .office-app label { display: grid; gap: 6px; font-size: 13px; font-weight: 700; color: var(--ink-soft); }
 .office-app textarea, .office-app input, .office-app select { width: 100%; border: 1px solid var(--line); background: white; border-radius: 12px; padding: 12px 14px; color: var(--ink); }
 .office-app textarea { min-height: 140px; resize: vertical; }
@@ -114,7 +116,9 @@ body:has(.mzmon) { height: 100%; overflow: hidden; }
   .office-app .composer { left: 0; padding: 12px 18px 16px; }
   .office-app .thread { max-height: calc(100vh - 340px); }
   .office-app .side { position: sticky; top: 0; z-index: 5; padding: 14px; }
-  .office-app .nav { flex-direction: row; overflow: auto; }
+  .office-app .nav { flex-direction: row; overflow: auto; gap: 14px; }
+  .office-app .nav-group { display: flex; gap: 6px; align-items: center; }
+  .office-app .nav-label { white-space: nowrap; padding-right: 0; }
   .office-app .nav a, .office-app .side .ghost { white-space: nowrap; flex: none; }
   .office-app .side button.ghost { margin-top: 0; }
   .office-app .stats, .office-app .grid-2, .office-app .week-grid, .office-app .consult-row, .office-app .talk { grid-template-columns: 1fr; }

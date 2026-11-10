@@ -27,3 +27,16 @@ export function nextMonth(dateKey: string) {
 export function won(amount: number) {
   return `${amount.toLocaleString("ko-KR")}원`;
 }
+
+export function onOrAfterDay(day: number, from = seoulToday()) {
+  const [year, month, today] = from.split("-").map(Number);
+  const lastThis = new Date(Date.UTC(year, month, 0)).getUTCDate();
+  const clamped = Math.min(Math.max(day, 1), lastThis);
+  if (today <= clamped) {
+    return `${year}-${String(month).padStart(2, "0")}-${String(clamped).padStart(2, "0")}`;
+  }
+  const next = nextMonth(`${year}-${String(month).padStart(2, "0")}-01`);
+  const [nextYear, nextMonthNo] = next.split("-").map(Number);
+  const lastNext = new Date(Date.UTC(nextYear, nextMonthNo, 0)).getUTCDate();
+  return `${nextYear}-${String(nextMonthNo).padStart(2, "0")}-${String(Math.min(Math.max(day, 1), lastNext)).padStart(2, "0")}`;
+}

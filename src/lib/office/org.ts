@@ -4,6 +4,7 @@ export type OrgSeat = {
   id: string;
   agentKey: string;
   name: string;
+  desk: "장부" | "제작" | "대기";
   duty: string;
   person: string;
   mode: "ON" | "SEAT";
@@ -17,6 +18,7 @@ export const ORG: OrgSeat[] = [
     id: "seed-sales-pm",
     agentKey: "sales-pm",
     name: "수주",
+    desk: "제작",
     duty: "견적·제안·계약 초안. 대표 메일함으로만 보낼 자리이며 지금은 대화에 남긴다.",
     person: "김영우",
     mode: "ON",
@@ -28,6 +30,7 @@ export const ORG: OrgSeat[] = [
     id: "seed-marketing-pm",
     agentKey: "marketing-pm",
     name: "바이럴",
+    desk: "제작",
     duty: "월 수량과 문안 묶음. 발행은 하지 않는다.",
     person: "문미영",
     mode: "ON",
@@ -39,6 +42,7 @@ export const ORG: OrgSeat[] = [
     id: "seed-video-pm",
     agentKey: "video-pm",
     name: "영상",
+    desk: "제작",
     duty: "규격, 외주 지시, 편집 공백, 납기.",
     person: "편집 담당 없음",
     mode: "ON",
@@ -50,6 +54,7 @@ export const ORG: OrgSeat[] = [
     id: "seed-dev-pm",
     agentKey: "dev-pm",
     name: "개발",
+    desk: "제작",
     duty: "요구와 기능, 구현과 검수를 구분한다. 배포하지 않는다.",
     person: "송하늬, 서영준",
     mode: "ON",
@@ -61,6 +66,7 @@ export const ORG: OrgSeat[] = [
     id: "seed-design-pm",
     agentKey: "design-pm",
     name: "디자인",
+    desk: "제작",
     duty: "규격, 시안, 수정, 인쇄 파일.",
     person: "전담 이름 없음",
     mode: "ON",
@@ -72,6 +78,7 @@ export const ORG: OrgSeat[] = [
     id: "seed-collections-pm",
     agentKey: "collections-pm",
     name: "수금",
+    desk: "장부",
     duty: "청구 후보, 지연, 매월 10일 급여 알림.",
     person: "김영우",
     mode: "ON",
@@ -83,6 +90,7 @@ export const ORG: OrgSeat[] = [
     id: "seed-rental-pm",
     agentKey: "rental-pm",
     name: "렌탈",
+    desk: "대기",
     duty: "재고 확인, 출고·반납 일정.",
     person: "전담 이름 없음",
     mode: "SEAT",
@@ -94,6 +102,7 @@ export const ORG: OrgSeat[] = [
     id: "seed-education-pm",
     agentKey: "education-pm",
     name: "교육",
+    desk: "대기",
     duty: "회차, 자료, 출석, 수료.",
     person: "김영우",
     mode: "SEAT",

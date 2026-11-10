@@ -12,6 +12,7 @@ import {
 } from "@/lib/office/agent-policy";
 import { createJob, updateJob } from "@/lib/office/db";
 import { completeJson } from "@/lib/office/llm";
+import { encodeLedger, parseLedger, readLedger } from "@/lib/office/ledger";
 import { AGENT_CAP, ORG, orgByKey } from "@/lib/office/org";
 import { renderDeliveryPackage } from "@/lib/office/package";
 import { llmEnabled, limits } from "@/lib/office/policy";
@@ -50,6 +51,19 @@ async function activeAgent(agentKey: string) {
 export async function officeTurn(message: string) {
   const text = message.trim();
   if (text.length < 2) throw new Error("질문을 적어 주세요.");
+  const ledger = parseLedger(text);
+  if (ledger) {
+    const id = await createJob(text);
+    if (ledger.type === "clarify") return finish(id, "COMPLETED", ledger.question);
+    const report = `${ledger.draft.summary}\n확인하면 장부에 넣습니다. 그 전에는 숫자를 바꾸지 않습니다.`;
+    await updateJob(id, {
+      status: "WAITING_APPROVAL",
+      analysis: encodeLedger(ledger.draft),
+      report,
+      startedAt: new Date().toISOString(),
+    });
+    return { jobId: id, status: "WAITING_APPROVAL" as const, report, llm: llmEnabled() };
+  }
   const turn = classifyTurn(text);
   const forbidden = forbiddenParts(text);
   const id = await createJob(text);
@@ -281,8 +295,19 @@ export async function listPendingAgents() {
 }
 
 export async function recentTurns() {
-  const jobs = await prisma.officeJob.findMany({ orderBy: { createdAt: "desc" }, take: 8, select: { id: true, goal: true, report: true, status: true, createdAt: true } });
-  return jobs.map((job) => ({ id: job.id, goal: job.goal, report: job.report, status: job.status, createdAt: job.createdAt.toISOString() }));
+  const jobs = await prisma.officeJob.findMany({
+    orderBy: { createdAt: "desc" },
+    take: 8,
+    select: { id: true, goal: true, report: true, status: true, analysis: true, createdAt: true },
+  });
+  return jobs.map((job) => ({
+    id: job.id,
+    goal: job.goal,
+    report: job.report,
+    status: job.status,
+    createdAt: job.createdAt.toISOString(),
+    ledger: job.status === "WAITING_APPROVAL" ? readLedger(job.analysis) : null,
+  }));
 }
 
 export async function decideAgent(id: string, decision: string, actor: string) {

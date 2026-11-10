@@ -73,7 +73,7 @@ export default function ErpDashboardPage() {
           <p className="kicker">ERP</p>
           <h1>대시보드</h1>
           <p>
-            {data.month} 기준입니다. 확정 매출은 이번 달 청구 예정액이고, 입금은 실제로 들어온 금액입니다.
+            엠지몬에게 말하면 확인 후 이 장부로 들어옵니다. {data.month} 확정 매출은 청구 예정액이고, 입금은 실제로 들어온 금액입니다.
           </p>
         </div>
       </header>
