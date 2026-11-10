@@ -1,14 +1,15 @@
+"use client";
+
+import { usePathname } from "next/navigation";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
-import { headers } from "next/headers";
 
-export async function AppChrome({
+export function AppChrome({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const headerList = await headers();
-  const pathname = headerList.get("x-pathname") ?? "";
+  const pathname = usePathname();
   const isOs = pathname === "/os" || pathname.startsWith("/os/");
   const isOffice = pathname === "/office" || pathname.startsWith("/office/");
   const isHome = pathname === "/";
@@ -22,6 +23,18 @@ export async function AppChrome({
       <div className="flex h-dvh flex-col overflow-hidden bg-paper">
         <Header />
         <div className="min-h-0 flex-1">{children}</div>
+      </div>
+    );
+  }
+
+  if (pathname === "/explore") {
+    return (
+      <div className="flex h-dvh flex-col overflow-hidden bg-paper">
+        <Header />
+        <div className="explore-scroll min-h-0 flex-1 overflow-y-scroll">
+          <main>{children}</main>
+          <Footer />
+        </div>
       </div>
     );
   }
