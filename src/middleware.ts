@@ -14,7 +14,7 @@ export function middleware(request: NextRequest) {
   if (isOsPage) {
     const token = request.cookies.get("mz_staff")?.value;
     if (!token) {
-      const login = new URL("/os/login", request.url);
+      const login = new URL("/admin", request.url);
       login.searchParams.set("next", pathname);
       return NextResponse.redirect(login);
     }

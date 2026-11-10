@@ -6,6 +6,9 @@ import { usePathname, useRouter } from "next/navigation";
 const LINKS = [
   { href: "/office", label: "엠지몬" },
   { href: "/office/backend", label: "백엔드" },
+  { href: "/office/erp", label: "대시보드" },
+  { href: "/office/erp/payments", label: "수금·미수" },
+  { href: "/office/erp/costs", label: "지출" },
   { href: "/office/inquiries", label: "1:1 문의" },
   { href: "/office/asks", label: "AI에게 물어보기" },
 ];
@@ -31,7 +34,10 @@ export function OfficeFrame({ children }: { children: React.ReactNode }) {
           </div>
           <nav className="nav">
             {LINKS.map((link) => {
-              const active = link.href === "/office" ? pathname === "/office" : pathname.startsWith(link.href);
+              const active =
+                link.href === "/office" || link.href === "/office/erp"
+                  ? pathname === link.href
+                  : pathname.startsWith(link.href);
               return (
                 <Link key={link.href} href={link.href} className={active ? "active" : ""}>
                   {link.label}

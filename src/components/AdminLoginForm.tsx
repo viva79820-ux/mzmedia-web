@@ -24,7 +24,7 @@ export function AdminLoginForm() {
         setError(data.message || "로그인에 실패했습니다.");
         return;
       }
-      router.replace("/admin/orders");
+      router.replace("/office/erp");
       router.refresh();
     } catch {
       setError("로그인에 실패했습니다.");
