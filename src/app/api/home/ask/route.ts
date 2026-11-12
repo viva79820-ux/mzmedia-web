@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { answerFromApproved, answerHome } from "@/lib/home/answer";
+import { portfolioAnswer } from "@/lib/portfolio";
 import { lockedStandards, matchingMemory, promoteStandards, recordAsk } from "@/lib/home/asks";
 import { answerHomeWithModel } from "@/lib/home/model";
 import { answeredReplies } from "@/lib/home/store";
@@ -42,6 +43,13 @@ export async function POST(request: Request) {
   const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "local";
   if (!allowQuestion(ip)) {
     return NextResponse.json({ error: "질문이 너무 빠릅니다. 잠시 후 다시 검색해 주세요." }, { status: 429 });
+  }
+
+  const portfolio = portfolioAnswer(message);
+  if (portfolio) {
+    await recordAsk({ question: message, answer: portfolio.markdown, needsInquiry: portfolio.needsInquiry }).catch(() => undefined);
+    await promoteStandards().catch(() => undefined);
+    return NextResponse.json(portfolio);
   }
 
   const [replies, locked, memory] = await Promise.all([

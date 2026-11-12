@@ -2,6 +2,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Reveal } from "@/components/Reveal";
+import { WebPortfolio } from "@/components/WebPortfolio";
 import { exploreLinks, lectureLinks, serviceLinks, site } from "@/lib/site";
 
 const serviceCards = [
@@ -18,10 +19,10 @@ const serviceCards = [
     action: "상품 보기 →",
   },
   {
-    href: "/services/web-it",
+    href: "#portfolio",
     name: "홈페이지·IT",
-    description: "웹사이트·시스템·앱·자동화 개발",
-    action: "상품 보기 →",
+    description: "웹사이트·시스템·앱 개발과 작업 사례",
+    action: "작업 사례 보기 →",
   },
   {
     href: "/services/design-print",
@@ -129,6 +130,10 @@ export default function ExplorePage() {
               </Reveal>
             ))}
           </div>
+
+          <Reveal className="mt-16 border-t border-line pt-14">
+            <WebPortfolio />
+          </Reveal>
         </div>
       </section>
 

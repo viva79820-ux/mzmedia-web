@@ -1,3 +1,5 @@
+import { isPortfolioQuestion, webPortfolio } from "@/lib/portfolio";
+
 export type HomeLink = { href: string; label: string };
 
 export type HomeReply = { question: string; answer: string };
@@ -188,6 +190,9 @@ const privatePattern = /미수|계약서|급여|직원명단|문미영|송하늬
 const moneyQuestion = /얼마|비용|가격|예산|할인|견적|몇\s*건|수량/;
 
 export function linksForQuestion(message: string): HomeLink[] {
+  if (isPortfolioQuestion(message)) {
+    return webPortfolio.map((item) => ({ href: item.href, label: item.name }));
+  }
   const links: HomeLink[] = [];
   const add = (href: string, label: string) => {
     if (!links.some((link) => link.href === href)) links.push({ href, label });

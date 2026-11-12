@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PageHero } from "@/components/PageHero";
 import { ProductCard } from "@/components/ProductCard";
+import { WebPortfolio } from "@/components/WebPortfolio";
 import { ensureCatalogSeeded } from "@/lib/catalog-db";
 import { prisma } from "@/lib/db";
 
@@ -59,6 +60,7 @@ export default async function ServiceCategoryPage({ params }: Props) {
       />
       <section className="bg-white py-14 md:py-20">
         <div className="site-shell space-y-12">
+          {category.slug === "web-it" ? <WebPortfolio heading="작업 사례" /> : null}
           {category.products.length > 0 && (
             <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {category.products.map((product) => (

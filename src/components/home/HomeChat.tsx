@@ -48,6 +48,8 @@ const samples = [
   "오프라인 강의는 어떻게 신청하나요?",
   "견적은 어떻게 받나요?",
   "엠지미디어는 어떤 회사인가요?",
+  "회사 포트폴리오 보여줘",
+  "회사 홈페이지 작업 내역 보여줘",
 ];
 
 function pickSamples(list: readonly string[], count: number) {
@@ -159,11 +161,23 @@ export function HomeChat() {
                     <b className="mb-1 block text-xs text-muted">엠지미디어</b>
                     <p className="whitespace-pre-wrap">{turn.answer.markdown}</p>
                     <div className="mt-3 flex flex-wrap gap-2">
-                      {turn.answer.links.map((link) => (
-                        <Link key={link.href} href={link.href} className="rounded-full border border-line bg-white px-3 py-1.5 text-xs font-semibold text-ink">
-                          {link.label}
-                        </Link>
-                      ))}
+                      {turn.answer.links.map((link) =>
+                        /^https?:\/\//.test(link.href) ? (
+                          <a
+                            key={link.href}
+                            href={link.href}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="rounded-full border border-line bg-white px-3 py-1.5 text-xs font-semibold text-ink"
+                          >
+                            {link.label}
+                          </a>
+                        ) : (
+                          <Link key={link.href} href={link.href} className="rounded-full border border-line bg-white px-3 py-1.5 text-xs font-semibold text-ink">
+                            {link.label}
+                          </Link>
+                        ),
+                      )}
                     {turn.answer.needsInquiry ? (
                       <Link
                         href={`/inquiries?question=${encodeURIComponent(turn.question)}`}
