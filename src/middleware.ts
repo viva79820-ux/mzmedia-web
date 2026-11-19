@@ -9,6 +9,7 @@ export function middleware(request: NextRequest) {
   const isOsPage =
     (pathname === "/os" || pathname.startsWith("/os/")) &&
     !pathname.startsWith("/os/login") &&
+    !pathname.startsWith("/os/signup") &&
     !pathname.startsWith("/api/");
 
   if (isOsPage) {
