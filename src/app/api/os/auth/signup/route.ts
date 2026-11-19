@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { parseCompanyEmail } from "@/lib/company-mail";
+import { isOwnerAccount } from "@/lib/owner";
 import { prisma } from "@/lib/db";
 import {
   createStaffToken,
@@ -46,7 +47,7 @@ export async function POST(request: Request) {
         email: claimed.email,
         name,
         passwordHash: await hashStaffPassword(password),
-        role: "EMPLOYEE",
+        role: isOwnerAccount(claimed.email) ? "SUPER_ADMIN" : "EMPLOYEE",
         active: true,
       },
       select: { id: true, username: true, name: true, role: true },

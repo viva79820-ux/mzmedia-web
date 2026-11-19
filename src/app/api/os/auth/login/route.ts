@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { isOwnerAccount } from "@/lib/owner";
 import { ensureSuperAdminSeeded } from "@/lib/os-seed";
 import {
   createStaffToken,
@@ -30,7 +31,8 @@ export async function POST(request: Request) {
         ? { OR: [{ username }, { email: username }] }
         : { username },
     });
-    if (!staff || !staff.active) {
+    const owner = staff ? isOwnerAccount(staff.email) || isOwnerAccount(staff.username) : false;
+    if (!staff || (!staff.active && !owner)) {
       return NextResponse.json(
         { ok: false, message: "계정을 확인할 수 없습니다." },
         { status: 401 },
@@ -45,11 +47,20 @@ export async function POST(request: Request) {
       );
     }
 
+    let role = staff.role;
+    if (owner && (staff.role !== "SUPER_ADMIN" || !staff.active)) {
+      await prisma.staff.update({
+        where: { id: staff.id },
+        data: { role: "SUPER_ADMIN", active: true },
+      });
+      role = "SUPER_ADMIN";
+    }
+
     const token = await createStaffToken({
       id: staff.id,
       username: staff.username,
       name: staff.name,
-      role: staff.role,
+      role,
     });
     await setStaffCookie(token);
 
@@ -59,7 +70,7 @@ export async function POST(request: Request) {
         id: staff.id,
         username: staff.username,
         name: staff.name,
-        role: staff.role,
+        role,
       },
     });
   } catch (error) {
