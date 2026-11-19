@@ -7,7 +7,7 @@ import "../office.css";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "엠지몬",
+  title: "엠지 오피스",
   robots: { index: false, follow: false },
 };
 

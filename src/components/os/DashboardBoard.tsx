@@ -84,10 +84,12 @@ export function DashboardBoard() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-ink">대표 대시보드</h1>
+        <h1 className="text-2xl font-bold text-ink">{s.revenueLabel ? "대표 대시보드" : "운영 현황"}</h1>
         <p className="mt-1 text-sm text-muted">{s.month} 기준 운영 현황</p>
       </div>
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        {s.revenueLabel ? (
+          <>
         <Card
           label="이번 달 입금(매출)"
           value={s.revenueLabel}
@@ -108,6 +110,8 @@ export function DashboardBoard() {
           value={formatWon(s.overdueAmount)}
           hint={`${s.overdueCount}건`}
         />
+          </>
+        ) : null}
       </div>
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <Card label="신규 리드" value={`${s.pipeline.lead}건`} />

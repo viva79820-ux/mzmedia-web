@@ -6,7 +6,7 @@ import { useState } from "react";
 export function OsLoginForm() {
   const router = useRouter();
   const search = useSearchParams();
-  const [username, setUsername] = useState("admin");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -26,7 +26,8 @@ export function OsLoginForm() {
         setError(data.message ?? "로그인에 실패했습니다.");
         return;
       }
-      const next = search.get("next") || "/os";
+      const requested = search.get("next") || "/os";
+      const next = requested === "/office" || requested === "/admin" ? "/os" : requested;
       router.replace(next);
       router.refresh();
     } catch {
@@ -47,16 +48,17 @@ export function OsLoginForm() {
         </p>
         <h1 className="mt-2 text-xl font-bold text-ink">직원 로그인</h1>
         <p className="mt-1 text-sm text-muted">
-          임직원 계정으로 운영시스템에 접속합니다.
+          아이디는 본인 @mzmedia.co.kr 주소입니다. 주소가 생기기 전에는 기존 아이디로 들어옵니다.
         </p>
       </div>
       <label className="block text-sm">
-        <span className="mb-1 block font-medium">아이디</span>
+        <span className="mb-1 block font-medium">회사 메일</span>
         <input
           value={username}
           onChange={(e) => setUsername(e.target.value)}
           className="w-full rounded-xl border border-line bg-paper px-3 py-2.5"
           autoComplete="username"
+          placeholder="name@mzmedia.co.kr"
           required
         />
       </label>

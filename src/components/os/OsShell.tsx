@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { Bell } from "@/components/os/Bell";
 import { STAFF_ROLE_LABEL } from "@/lib/os";
 import type { StaffRole } from "@/generated/prisma/client";
 
@@ -19,24 +20,32 @@ const navItems: {
   label: string;
   roles?: StaffRole[];
 }[] = [
+  { href: "/os/calendar", label: "생산 달력" },
+  { href: "/os/day", label: "하루", roles: ["SUPER_ADMIN", "MANAGER", "EMPLOYEE", "FREELANCER"] },
+  { href: "/os/inbox", label: "수신함", roles: ["SUPER_ADMIN", "MANAGER"] },
+  { href: "/os/ask", label: "AI 질문", roles: ["SUPER_ADMIN", "MANAGER", "EMPLOYEE", "FREELANCER"] },
+  { href: "/os/drafts", label: "문서 초안", roles: ["SUPER_ADMIN", "MANAGER"] },
+  { href: "/os/chat", label: "대화", roles: ["SUPER_ADMIN", "MANAGER", "EMPLOYEE", "FREELANCER"] },
   { href: "/os/dashboard", label: "대시보드", roles: ["SUPER_ADMIN", "MANAGER", "ACCOUNTING"] },
   { href: "/os/notifications", label: "알림" },
   { href: "/os/tasks", label: "내 업무" },
   { href: "/os/leads", label: "영업", roles: ["SUPER_ADMIN", "MANAGER", "EMPLOYEE"] },
-  { href: "/os/customers", label: "고객", roles: ["SUPER_ADMIN", "MANAGER", "EMPLOYEE", "ACCOUNTING"] },
+  { href: "/os/customers", label: "고객사", roles: ["SUPER_ADMIN", "MANAGER"] },
   { href: "/os/quotes", label: "견적", roles: ["SUPER_ADMIN", "MANAGER", "EMPLOYEE"] },
   { href: "/os/contracts", label: "계약", roles: ["SUPER_ADMIN", "MANAGER", "EMPLOYEE", "ACCOUNTING"] },
   { href: "/os/projects", label: "프로젝트" },
   { href: "/os/recurring", label: "반복업무", roles: ["SUPER_ADMIN", "MANAGER", "EMPLOYEE"] },
-  { href: "/os/finance/payments", label: "매출·입금", roles: ["SUPER_ADMIN", "MANAGER", "ACCOUNTING"] },
-  { href: "/os/finance/costs", label: "비용·원가", roles: ["SUPER_ADMIN", "MANAGER", "ACCOUNTING"] },
-  { href: "/os/reports", label: "경영 리포트", roles: ["SUPER_ADMIN", "MANAGER", "ACCOUNTING"] },
+  { href: "/os/money", label: "금액", roles: ["SUPER_ADMIN"] },
+  { href: "/os/money", label: "미수", roles: ["MANAGER", "ACCOUNTING"] },
+  { href: "/os/finance/payments", label: "매출·입금", roles: ["SUPER_ADMIN"] },
+  { href: "/os/finance/costs", label: "비용·원가", roles: ["SUPER_ADMIN"] },
+  { href: "/os/reports", label: "경영 리포트", roles: ["SUPER_ADMIN"] },
   { href: "/os/files", label: "파일·자료" },
   { href: "/os/staff", label: "직원", roles: ["SUPER_ADMIN", "MANAGER"] },
   { href: "/os/legacy/orders", label: "레거시 오더", roles: ["SUPER_ADMIN", "MANAGER"] },
-  { href: "/os/catalog", label: "상품 카탈로그", roles: ["SUPER_ADMIN", "MANAGER"] },
-  { href: "/os/wages", label: "급여명세서", roles: ["SUPER_ADMIN", "MANAGER", "ACCOUNTING"] },
-  { href: "/office", label: "AI Office", roles: ["SUPER_ADMIN", "MANAGER"] },
+  { href: "/os/catalog", label: "상품 카탈로그", roles: ["SUPER_ADMIN"] },
+  { href: "/os/wages", label: "급여명세서", roles: ["SUPER_ADMIN"] },
+  { href: "/office/chat", label: "엠지몬", roles: ["SUPER_ADMIN", "MANAGER"] },
 ]
 
 export function OsShell({
@@ -87,7 +96,7 @@ export function OsShell({
         <div className="border-t border-line p-3">
           <p className="text-sm font-medium text-ink">{staff.name}</p>
           <p className="text-xs text-muted">
-            {STAFF_ROLE_LABEL[staff.role]} · @{staff.username}
+            {STAFF_ROLE_LABEL[staff.role]} · {staff.username.includes("@") ? staff.username : `@${staff.username}`}
           </p>
           <button
             type="button"
@@ -117,9 +126,12 @@ export function OsShell({
               </Link>
             ))}
           </div>
-          <Link href="/" className="text-xs text-muted hover:text-ink">
-            홈페이지 →
-          </Link>
+          <div className="ml-auto flex items-center gap-3">
+            <Bell />
+            <Link href="/" className="text-xs text-muted hover:text-ink">
+              홈페이지 →
+            </Link>
+          </div>
         </header>
         <main className="flex-1 px-4 py-5 md:px-6 md:py-6">{children}</main>
       </div>

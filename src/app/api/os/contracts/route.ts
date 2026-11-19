@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type { ContractStatus } from "@/generated/prisma/client";
 import { prisma } from "@/lib/db";
-import { canManageQuotes, canSeeAllRecords, todayKey } from "@/lib/os";
+import { canManageQuotes, canSeeAllRecords, canSeeAmounts, todayKey } from "@/lib/os";
 import { requireStaff } from "@/lib/staff-auth";
 
 export const runtime = "nodejs";
@@ -43,7 +43,28 @@ export async function GET() {
       },
       take: 300,
     });
-    return NextResponse.json({ contracts });
+    const visible = canSeeAmounts(staff);
+    return NextResponse.json({
+      canSeeAmounts: visible,
+      contracts: visible
+        ? contracts
+        : contracts.map((contract) => {
+            const {
+              contractAmount: _contractAmount,
+              depositAmount: _depositAmount,
+              milestoneAmount: _milestoneAmount,
+              finalAmount: _finalAmount,
+              quote,
+              project,
+              ...rest
+            } = contract;
+            return {
+              ...rest,
+              quote: quote ? { id: quote.id, title: quote.title, version: quote.version } : null,
+              project: project ? { id: project.id, name: project.name, status: project.status } : null,
+            };
+          }),
+    });
   } catch (error) {
     return fail(error);
   }
@@ -54,6 +75,12 @@ export async function POST(request: Request) {
     const staff = await requireStaff();
     if (!canManageQuotes(staff)) throw new Error("FORBIDDEN");
     const body = (await request.json()) as Record<string, unknown>;
+    if (
+      !canSeeAmounts(staff) &&
+      ["contractAmount", "depositAmount", "milestoneAmount", "finalAmount"].some((key) => body[key] !== undefined)
+    ) {
+      return NextResponse.json({ ok: false, message: "금액은 대표만 저장합니다." }, { status: 403 });
+    }
     const customerId = String(body.customerId ?? "");
     const title = String(body.title ?? "").trim();
     if (!customerId || !title) {
@@ -156,17 +183,19 @@ export async function POST(request: Request) {
           dueDate: String(body.finalDue ?? ""),
         });
       }
-      for (const row of schedule) {
-        await tx.payment.create({
-          data: {
-            projectId,
-            label: row.label,
-            kind: row.kind,
-            amount: row.amount,
-            dueDate: row.dueDate,
-            status: "PLANNED",
-          },
-        });
+      if (canSeeAmounts(staff)) {
+        for (const row of schedule) {
+          await tx.payment.create({
+            data: {
+              projectId,
+              label: row.label,
+              kind: row.kind,
+              amount: row.amount,
+              dueDate: row.dueDate,
+              status: "PLANNED",
+            },
+          });
+        }
       }
 
       return contract;
@@ -185,6 +214,12 @@ export async function PATCH(request: Request) {
       throw new Error("FORBIDDEN");
     }
     const body = (await request.json()) as Record<string, unknown>;
+    if (
+      !canSeeAmounts(staff) &&
+      ["contractAmount", "depositAmount", "milestoneAmount", "finalAmount"].some((key) => body[key] !== undefined)
+    ) {
+      return NextResponse.json({ ok: false, message: "금액은 대표만 저장합니다." }, { status: 403 });
+    }
     const id = String(body.id ?? "");
     if (!id) return NextResponse.json({ ok: false }, { status: 400 });
 

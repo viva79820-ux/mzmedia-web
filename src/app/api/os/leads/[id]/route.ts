@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type { LeadSource, LeadStage } from "@/generated/prisma/client";
 import { prisma } from "@/lib/db";
+import { canSeeAmounts } from "@/lib/os";
 import { requireStaff } from "@/lib/staff-auth";
 
 export const runtime = "nodejs";
@@ -33,7 +34,7 @@ const SOURCES = new Set([
 
 export async function GET(_request: Request, ctx: Ctx) {
   try {
-    await requireStaff();
+    const staff = await requireStaff();
     const { id } = await ctx.params;
     const lead = await prisma.lead.findUnique({
       where: { id },
@@ -49,6 +50,17 @@ export async function GET(_request: Request, ctx: Ctx) {
       },
     });
     if (!lead) return NextResponse.json({ ok: false }, { status: 404 });
+    if (!canSeeAmounts(staff)) {
+      const { expectedAmount: _expectedAmount, project, ...rest } = lead;
+      return NextResponse.json({
+        lead: {
+          ...rest,
+          project: project
+            ? { id: project.id, name: project.name, status: project.status }
+            : null,
+        },
+      });
+    }
     return NextResponse.json({ lead });
   } catch (error) {
     if (error instanceof Error && error.message === "UNAUTHORIZED") {
@@ -80,10 +92,14 @@ export async function PATCH(request: Request, ctx: Ctx) {
       data.desiredService = String(body.desiredService);
     }
     if (body.expectedAmount !== undefined) {
-      data.expectedAmount =
-        body.expectedAmount === null || body.expectedAmount === ""
+      if (!canSeeAmounts(staff) && body.expectedAmount !== null && body.expectedAmount !== "") {
+        return NextResponse.json({ ok: false, message: "금액은 대표만 저장합니다." }, { status: 403 });
+      }
+      data.expectedAmount = canSeeAmounts(staff)
+        ? body.expectedAmount === null || body.expectedAmount === ""
           ? null
-          : Number(body.expectedAmount) || null;
+          : Number(body.expectedAmount) || null
+        : null;
     }
     if (body.nextContactDate !== undefined) {
       data.nextContactDate = String(body.nextContactDate);
@@ -128,7 +144,7 @@ export async function PATCH(request: Request, ctx: Ctx) {
             customerId: full.customerId,
             name: full.title,
             status: "CONTRACTED",
-            contractAmount: full.expectedAmount ?? 0,
+            contractAmount: canSeeAmounts(staff) ? full.expectedAmount ?? 0 : 0,
             serviceCategory: full.desiredService || "",
             channelSource: full.source,
             startDate: new Date().toISOString().slice(0, 10),

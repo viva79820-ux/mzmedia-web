@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type { QuoteStatus } from "@/generated/prisma/client";
 import { prisma } from "@/lib/db";
-import { canManageQuotes, canSeeAllRecords } from "@/lib/os";
+import { canManageQuotes, canSeeAllRecords, canSeeAmounts } from "@/lib/os";
 import { requireStaff } from "@/lib/staff-auth";
 
 export const runtime = "nodejs";
@@ -47,7 +47,13 @@ export async function GET() {
       },
       take: 300,
     });
-    return NextResponse.json({ quotes });
+    const visible = canSeeAmounts(staff);
+    return NextResponse.json({
+      canSeeAmounts: visible,
+      quotes: visible
+        ? quotes
+        : quotes.map(({ amount: _amount, lineItems: _lineItems, ...rest }) => rest),
+    });
   } catch (error) {
     return fail(error);
   }
@@ -58,6 +64,9 @@ export async function POST(request: Request) {
     const staff = await requireStaff();
     if (!canManageQuotes(staff)) throw new Error("FORBIDDEN");
     const body = (await request.json()) as Record<string, unknown>;
+    if (!canSeeAmounts(staff) && (body.amount !== undefined || body.lineItems !== undefined)) {
+      return NextResponse.json({ ok: false, message: "금액은 대표만 저장합니다." }, { status: 403 });
+    }
     const customerId = String(body.customerId ?? "");
     const title = String(body.title ?? "").trim();
     if (!customerId || !title) {
@@ -91,16 +100,10 @@ export async function POST(request: Request) {
           title: String(body.title ?? prev.title),
           version: (latest?.version ?? prev.version) + 1,
           parentId: rootId,
-          amount:
-            body.amount !== undefined
-              ? Number(body.amount) || 0
-              : prev.amount,
+          amount: canSeeAmounts(staff) && body.amount !== undefined ? Number(body.amount) || 0 : canSeeAmounts(staff) ? prev.amount : 0,
           status: "DRAFT",
           validUntil: String(body.validUntil ?? prev.validUntil),
-          lineItems:
-            body.lineItems !== undefined
-              ? (body.lineItems as object)
-              : (prev.lineItems as object),
+          lineItems: canSeeAmounts(staff) && body.lineItems !== undefined ? (body.lineItems as object) : canSeeAmounts(staff) ? (prev.lineItems as object) : [],
           notes: String(body.notes ?? prev.notes),
           createdById: staff.id,
         },
@@ -135,6 +138,9 @@ export async function PATCH(request: Request) {
     const staff = await requireStaff();
     if (!canManageQuotes(staff)) throw new Error("FORBIDDEN");
     const body = (await request.json()) as Record<string, unknown>;
+    if (!canSeeAmounts(staff) && (body.amount !== undefined || body.lineItems !== undefined)) {
+      return NextResponse.json({ ok: false, message: "금액은 대표만 저장합니다." }, { status: 403 });
+    }
     const id = String(body.id ?? "");
     if (!id) return NextResponse.json({ ok: false }, { status: 400 });
 

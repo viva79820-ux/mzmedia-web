@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type { LeadSource, LeadStage } from "@/generated/prisma/client";
 import { prisma } from "@/lib/db";
-import { canSeeAllRecords, isFreelancer } from "@/lib/os";
+import { canSeeAllRecords, canSeeAmounts, isFreelancer } from "@/lib/os";
 import { requireStaff } from "@/lib/staff-auth";
 
 export const runtime = "nodejs";
@@ -55,7 +55,13 @@ export async function GET() {
       },
       take: 400,
     });
-    return NextResponse.json({ leads });
+    const visible = canSeeAmounts(staff);
+    return NextResponse.json({
+      canSeeAmounts: visible,
+      leads: visible
+        ? leads
+        : leads.map(({ expectedAmount: _expectedAmount, ...rest }) => rest),
+    });
   } catch (error) {
     return fail(error);
   }
@@ -65,6 +71,9 @@ export async function POST(request: Request) {
   try {
     const staff = await requireStaff();
     const body = (await request.json()) as Record<string, unknown>;
+    if (!canSeeAmounts(staff) && body.expectedAmount !== undefined && body.expectedAmount !== null && body.expectedAmount !== "") {
+      return NextResponse.json({ ok: false, message: "금액은 대표만 저장합니다." }, { status: 403 });
+    }
     const customerId = String(body.customerId ?? "");
     const title = String(body.title ?? "").trim();
     if (!customerId || !title) {
@@ -88,12 +97,9 @@ export async function POST(request: Request) {
         source,
         ownerId: body.ownerId ? String(body.ownerId) : staff.id,
         desiredService: String(body.desiredService ?? ""),
-        expectedAmount:
-          body.expectedAmount === null ||
-          body.expectedAmount === undefined ||
-          body.expectedAmount === ""
-            ? null
-            : Number(body.expectedAmount) || null,
+        expectedAmount: canSeeAmounts(staff) && body.expectedAmount !== null && body.expectedAmount !== undefined && body.expectedAmount !== ""
+          ? Number(body.expectedAmount) || null
+          : null,
         nextContactDate: String(body.nextContactDate ?? ""),
         inquiryMessage: String(body.inquiryMessage ?? ""),
         memo: String(body.memo ?? ""),

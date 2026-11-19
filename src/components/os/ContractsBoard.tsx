@@ -33,6 +33,7 @@ type Quote = {
 
 export function ContractsBoard() {
   const [contracts, setContracts] = useState<Contract[]>([]);
+  const [amounts, setAmounts] = useState(false);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [quotes, setQuotes] = useState<Quote[]>([]);
   const [form, setForm] = useState({
@@ -59,9 +60,9 @@ export function ContractsBoard() {
       fetch("/api/os/quotes"),
     ]);
     if (cRes.ok) {
-      setContracts(
-        ((await cRes.json()) as { contracts: Contract[] }).contracts,
-      );
+      const data = (await cRes.json()) as { contracts: Contract[]; canSeeAmounts?: boolean };
+      setContracts(data.contracts);
+      setAmounts(Boolean(data.canSeeAmounts));
     }
     if (custRes.ok) {
       const customers = ((await custRes.json()) as { customers: Customer[] })
@@ -83,20 +84,28 @@ export function ContractsBoard() {
 
   async function createContract(e: React.FormEvent) {
     e.preventDefault();
+    const payload = amounts
+      ? {
+          ...form,
+          quoteId: form.quoteId || null,
+          contractAmount: Number(form.contractAmount) || 0,
+          depositAmount: Number(form.depositAmount) || 0,
+          milestoneAmount: Number(form.milestoneAmount) || 0,
+          finalAmount: form.finalAmount.trim() === "" ? undefined : Number(form.finalAmount) || 0,
+        }
+      : {
+          customerId: form.customerId,
+          quoteId: form.quoteId || null,
+          title: form.title,
+          contractDate: form.contractDate,
+          serviceCategory: form.serviceCategory,
+          documentUrl: form.documentUrl,
+          createProject: form.createProject,
+        };
     await fetch("/api/os/contracts", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        ...form,
-        quoteId: form.quoteId || null,
-        contractAmount: Number(form.contractAmount) || 0,
-        depositAmount: Number(form.depositAmount) || 0,
-        milestoneAmount: Number(form.milestoneAmount) || 0,
-        finalAmount:
-          form.finalAmount.trim() === ""
-            ? undefined
-            : Number(form.finalAmount) || 0,
-      }),
+      body: JSON.stringify(payload),
     });
     setForm((p) => ({
       ...p,
@@ -143,7 +152,7 @@ export function ContractsBoard() {
               ...form,
               quoteId: e.target.value,
               title: q?.title ?? form.title,
-              contractAmount: q ? String(q.amount) : form.contractAmount,
+              contractAmount: amounts && q ? String(q.amount ?? "") : form.contractAmount,
               customerId: q?.customer.id ?? form.customerId,
             });
           }}
@@ -152,7 +161,7 @@ export function ContractsBoard() {
           <option value="">견적 연결(선택)</option>
           {quotes.map((q) => (
             <option key={q.id} value={q.id}>
-              {q.title} · {formatWon(q.amount)}
+              {q.title}{amounts ? ` · ${formatWon(q.amount)}` : ""}
             </option>
           ))}
         </select>
@@ -163,6 +172,8 @@ export function ContractsBoard() {
           onChange={(e) => setForm({ ...form, title: e.target.value })}
           className="rounded-xl border border-line bg-paper px-3 py-2 text-sm"
         />
+        {amounts ? (
+          <>
         <input
           placeholder="계약금액"
           value={form.contractAmount}
@@ -189,6 +200,8 @@ export function ContractsBoard() {
           onChange={(e) => setForm({ ...form, finalAmount: e.target.value })}
           className="rounded-xl border border-line bg-paper px-3 py-2 text-sm"
         />
+          </>
+        ) : null}
         <input
           type="date"
           value={form.contractDate}
@@ -238,7 +251,7 @@ export function ContractsBoard() {
             <tr>
               <th className="px-3 py-2">계약</th>
               <th className="px-3 py-2">고객</th>
-              <th className="px-3 py-2">금액</th>
+              {amounts ? <th className="px-3 py-2">금액</th> : null}
               <th className="px-3 py-2">상태</th>
               <th className="px-3 py-2">프로젝트</th>
               <th className="px-3 py-2">문서</th>
@@ -252,6 +265,7 @@ export function ContractsBoard() {
                   <p className="text-xs text-muted">{c.contractDate}</p>
                 </td>
                 <td className="px-3 py-2">{c.customer.companyName}</td>
+                {amounts ? (
                 <td className="px-3 py-2">
                   {formatWon(c.contractAmount)}
                   <span className="block text-xs text-muted">
@@ -260,6 +274,7 @@ export function ContractsBoard() {
                     {formatWon(c.finalAmount)}
                   </span>
                 </td>
+                ) : null}
                 <td className="px-3 py-2">
                   {CONTRACT_STATUS_LABEL[c.status]}
                 </td>

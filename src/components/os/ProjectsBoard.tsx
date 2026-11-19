@@ -8,7 +8,7 @@ type Project = {
   id: string;
   name: string;
   status: keyof typeof PROJECT_STATUS_LABEL;
-  contractAmount: number;
+  contractAmount?: number;
   dueDate: string;
   progress: number;
   customer: { companyName: string };
@@ -19,6 +19,7 @@ type Customer = { id: string; companyName: string };
 
 export function ProjectsBoard() {
   const [projects, setProjects] = useState<Project[]>([]);
+  const [amounts, setAmounts] = useState(false);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [form, setForm] = useState({
     customerId: "",
@@ -33,7 +34,9 @@ export function ProjectsBoard() {
       fetch("/api/os/customers"),
     ]);
     if (pRes.ok) {
-      setProjects(((await pRes.json()) as { projects: Project[] }).projects);
+      const data = (await pRes.json()) as { projects: Project[]; canSeeAmounts?: boolean };
+      setProjects(data.projects);
+      setAmounts(Boolean(data.canSeeAmounts));
     }
     if (cRes.ok) {
       const customers = ((await cRes.json()) as { customers: Customer[] })
@@ -55,10 +58,11 @@ export function ProjectsBoard() {
     await fetch("/api/os/projects", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        ...form,
-        contractAmount: Number(form.contractAmount) || 0,
-      }),
+      body: JSON.stringify(
+        amounts
+          ? { ...form, contractAmount: Number(form.contractAmount) || 0 }
+          : { customerId: form.customerId, name: form.name, dueDate: form.dueDate },
+      ),
     });
     setForm((prev) => ({ ...prev, name: "", contractAmount: "", dueDate: "" }));
     await load();
@@ -96,12 +100,14 @@ export function ProjectsBoard() {
           onChange={(e) => setForm({ ...form, name: e.target.value })}
           className="rounded-xl border border-line bg-paper px-3 py-2 text-sm"
         />
+        {amounts ? (
         <input
           placeholder="계약금액"
           value={form.contractAmount}
           onChange={(e) => setForm({ ...form, contractAmount: e.target.value })}
           className="rounded-xl border border-line bg-paper px-3 py-2 text-sm"
         />
+        ) : null}
         <div className="flex gap-2">
           <input
             type="date"
@@ -125,7 +131,7 @@ export function ProjectsBoard() {
               <th className="px-3 py-2">프로젝트</th>
               <th className="px-3 py-2">고객</th>
               <th className="px-3 py-2">상태</th>
-              <th className="px-3 py-2">계약금액</th>
+              {amounts ? <th className="px-3 py-2">계약금액</th> : null}
               <th className="px-3 py-2">마감</th>
               <th className="px-3 py-2">진행</th>
             </tr>
@@ -140,13 +146,11 @@ export function ProjectsBoard() {
                   >
                     {p.name}
                   </Link>
-                  <span className="block text-xs text-muted">
-                    업무 {p._count.tasks} · 입금 {p._count.payments}
-                  </span>
+                  <span className="block text-xs text-muted">업무 {p._count.tasks}</span>
                 </td>
                 <td className="px-3 py-2">{p.customer.companyName}</td>
                 <td className="px-3 py-2">{PROJECT_STATUS_LABEL[p.status]}</td>
-                <td className="px-3 py-2">{formatWon(p.contractAmount)}</td>
+                {amounts ? <td className="px-3 py-2">{formatWon(p.contractAmount)}</td> : null}
                 <td className="px-3 py-2">{p.dueDate || "-"}</td>
                 <td className="px-3 py-2">{p.progress}%</td>
               </tr>

@@ -3,7 +3,7 @@ import type { SessionStaff } from "@/lib/staff-auth";
 
 export const STAFF_ROLE_LABEL: Record<StaffRole, string> = {
   SUPER_ADMIN: "대표",
-  MANAGER: "매니저",
+  MANAGER: "PM",
   EMPLOYEE: "직원",
   FREELANCER: "외주",
   ACCOUNTING: "회계",
@@ -11,6 +11,12 @@ export const STAFF_ROLE_LABEL: Record<StaffRole, string> = {
 
 export function isManagerPlus(role: StaffRole) {
   return role === "SUPER_ADMIN" || role === "MANAGER";
+}
+
+export function homePath(role: string) {
+  if (role === "MANAGER") return "/os/inbox";
+  if (role === "ACCOUNTING") return "/os/money";
+  return "/os/calendar";
 }
 
 export function canSeeAllRecords(staff: SessionStaff) {
@@ -21,12 +27,12 @@ export function canManageStaff(staff: SessionStaff) {
   return staff.role === "SUPER_ADMIN" || staff.role === "MANAGER";
 }
 
+export function canSeeAmounts(staff: SessionStaff) {
+  return staff.role === "SUPER_ADMIN";
+}
+
 export function canManageFinance(staff: SessionStaff) {
-  return (
-    staff.role === "SUPER_ADMIN" ||
-    staff.role === "MANAGER" ||
-    staff.role === "ACCOUNTING"
-  );
+  return canSeeAmounts(staff);
 }
 
 export function canManageQuotes(staff: SessionStaff) {

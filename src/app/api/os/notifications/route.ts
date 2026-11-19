@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { refreshOsNotifications } from "@/lib/os-notifications";
+import { canSeeAmounts } from "@/lib/os";
 import { requireStaff } from "@/lib/staff-auth";
 
 export const runtime = "nodejs";
@@ -9,8 +10,12 @@ export async function GET() {
   try {
     const staff = await requireStaff();
     await refreshOsNotifications();
+    const hideAmounts = !canSeeAmounts(staff);
+    const where = hideAmounts
+      ? { staffId: staff.id, kind: { not: "OVERDUE_PAYMENT" as const } }
+      : { staffId: staff.id };
     const notifications = await prisma.osNotification.findMany({
-      where: { staffId: staff.id },
+      where,
       orderBy: { createdAt: "desc" },
       take: 100,
     });

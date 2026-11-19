@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import type { StaffRole } from "@/generated/prisma/client";
+import { parseCompanyEmail } from "@/lib/company-mail";
 import { prisma } from "@/lib/db";
 import { canManageStaff } from "@/lib/os";
 import {
@@ -17,6 +18,20 @@ const ROLES = new Set([
   "FREELANCER",
   "ACCOUNTING",
 ]);
+
+async function claimCompanyEmail(value: string, exceptId?: string) {
+  const parsed = parseCompanyEmail(value);
+  if (!parsed.ok) return parsed;
+  const taken = await prisma.staff.findFirst({
+    where: {
+      ...(exceptId ? { NOT: { id: exceptId } } : {}),
+      OR: [{ email: parsed.email }, { username: parsed.email }],
+    },
+    select: { id: true },
+  });
+  if (taken) return { ok: false as const, error: "이미 쓰는 회사 메일입니다." };
+  return parsed;
+}
 
 function fail(error: unknown) {
   if (error instanceof Error && error.message === "UNAUTHORIZED") {
@@ -71,14 +86,12 @@ export async function POST(request: Request) {
   try {
     await requireStaffRole("SUPER_ADMIN", "MANAGER");
     const body = (await request.json()) as Record<string, unknown>;
-    const username = String(body.username ?? "")
-      .trim()
-      .toLowerCase();
-    const password = String(body.password ?? "");
     const name = String(body.name ?? "").trim();
-    if (!username || !password || !name || password.length < 4) {
+    const password = String(body.password ?? "");
+    const claimed = await claimCompanyEmail(String(body.companyLocal ?? body.email ?? ""));
+    if (!claimed.ok || !password || !name || password.length < 4) {
       return NextResponse.json(
-        { ok: false, message: "아이디·이름·비밀번호(4자 이상)는 필수입니다." },
+        { ok: false, message: claimed.ok ? "이름·회사 메일·비밀번호(4자 이상)는 필수입니다." : claimed.error },
         { status: 400 },
       );
     }
@@ -88,10 +101,10 @@ export async function POST(request: Request) {
 
     const created = await prisma.staff.create({
       data: {
-        username,
+        username: claimed.email,
         passwordHash: await hashStaffPassword(password),
         name,
-        email: String(body.email ?? ""),
+        email: claimed.email,
         phone: String(body.phone ?? ""),
         role,
         department: String(body.department ?? ""),
@@ -100,6 +113,7 @@ export async function POST(request: Request) {
       select: {
         id: true,
         username: true,
+        email: true,
         name: true,
         role: true,
         active: true,
@@ -120,7 +134,29 @@ export async function PATCH(request: Request) {
 
     const data: Record<string, unknown> = {};
     if (body.name !== undefined) data.name = String(body.name).trim();
-    if (body.email !== undefined) data.email = String(body.email);
+    if (body.companyLocal !== undefined || body.email !== undefined) {
+      const current = await prisma.staff.findUnique({
+        where: { id },
+        select: { email: true },
+      });
+      if (!current) return NextResponse.json({ ok: false }, { status: 404 });
+      const next = String(body.companyLocal ?? body.email ?? "").trim();
+      if (!next) {
+        if (current.email.endsWith("@mzmedia.co.kr")) {
+          return NextResponse.json(
+            { ok: false, message: "회사 메일 주소는 오피스에서 지우지 않습니다. 로그인을 막으려면 비활성화하세요." },
+            { status: 400 },
+          );
+        }
+      } else {
+        const claimed = await claimCompanyEmail(next, id);
+        if (!claimed.ok) {
+          return NextResponse.json({ ok: false, message: claimed.error }, { status: 400 });
+        }
+        data.email = claimed.email;
+        data.username = claimed.email;
+      }
+    }
     if (body.phone !== undefined) data.phone = String(body.phone);
     if (body.department !== undefined) data.department = String(body.department);
     if (body.active !== undefined) data.active = Boolean(body.active);
@@ -137,6 +173,7 @@ export async function PATCH(request: Request) {
       select: {
         id: true,
         username: true,
+        email: true,
         name: true,
         role: true,
         active: true,

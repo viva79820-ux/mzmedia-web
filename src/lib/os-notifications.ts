@@ -9,7 +9,7 @@ export async function refreshOsNotifications() {
       active: true,
       role: { in: ["SUPER_ADMIN", "MANAGER", "ACCOUNTING"] },
     },
-    select: { id: true },
+    select: { id: true, role: true },
   });
   if (managers.length === 0) return { created: 0 };
 
@@ -31,7 +31,7 @@ export async function refreshOsNotifications() {
           ],
         },
         take: 20,
-        include: { project: true },
+        include: { project: { include: { customer: true } } },
       }),
       prisma.lead.findMany({
         where: {
@@ -77,7 +77,7 @@ export async function refreshOsNotifications() {
 
   const rows: {
     staffId: string;
-    kind: "DUE_PROJECT" | "OVERDUE_PAYMENT" | "NEXT_CONTACT" | "TASK_DUE";
+    kind: "DUE_PROJECT" | "OVERDUE_PAYMENT" | "NEXT_CONTACT" | "TASK_DUE" | "GENERAL";
     title: string;
     body: string;
     href: string;
@@ -97,16 +97,30 @@ export async function refreshOsNotifications() {
       });
     }
     for (const pay of overduePayments) {
-      const title = `미수금: ${pay.label || pay.kind} ${pay.amount.toLocaleString("ko-KR")}원`;
-      const key = `${manager.id}:OVERDUE_PAYMENT:${title}`;
-      if (existingKey.has(key)) continue;
-      rows.push({
-        staffId: manager.id,
-        kind: "OVERDUE_PAYMENT",
-        title,
-        body: `${pay.project?.name ?? "프로젝트 없음"} · 예정 ${pay.dueDate}`,
-        href: "/os/finance/payments",
-      });
+      const customerName = pay.project?.customer.companyName ?? "고객사";
+      if (manager.role === "SUPER_ADMIN") {
+        const title = `미수금: ${pay.label || pay.kind} ${pay.amount.toLocaleString("ko-KR")}원`;
+        const key = `${manager.id}:OVERDUE_PAYMENT:${title}`;
+        if (existingKey.has(key)) continue;
+        rows.push({
+          staffId: manager.id,
+          kind: "OVERDUE_PAYMENT",
+          title,
+          body: `${pay.project?.name ?? "프로젝트 없음"} · 예정 ${pay.dueDate}`,
+          href: "/os/money",
+        });
+      } else if (manager.role === "MANAGER") {
+        const title = `미수 있음: ${customerName}`;
+        const key = `${manager.id}:GENERAL:${title}`;
+        if (existingKey.has(key)) continue;
+        rows.push({
+          staffId: manager.id,
+          kind: "GENERAL",
+          title,
+          body: customerName,
+          href: "/os/money",
+        });
+      }
     }
     for (const lead of nextContacts) {
       const title = `다음 연락: ${lead.title}`;

@@ -5,6 +5,7 @@ import {
   PAYMENT_STATUS_LABEL,
   PROJECT_STATUS_LABEL,
   TASK_STATUS_LABEL,
+  canSeeAmounts,
   formatWon,
 } from "@/lib/os";
 import { redirect } from "next/navigation";
@@ -39,10 +40,8 @@ export default async function OsProjectDetailPage({ params }: Props) {
   });
   if (!project) notFound();
 
-  const paid = project.payments
-    .filter((p) => p.status === "PAID")
-    .reduce((sum, p) => sum + p.amount, 0);
-  const costSum = project.costs.reduce((sum, c) => sum + c.amount, 0);
+  const amounts = canSeeAmounts(staff);
+  const openReceivable = project.payments.some((payment) => payment.status === "PLANNED" || payment.status === "OVERDUE");
 
   return (
     <div className="space-y-6">
@@ -55,11 +54,14 @@ export default async function OsProjectDetailPage({ params }: Props) {
           {project.customer.companyName} ·{" "}
           {PROJECT_STATUS_LABEL[project.status]} · 진행 {project.progress}%
         </p>
-        <p className="mt-2 text-sm">
-          계약 {formatWon(project.contractAmount)} · 입금 {formatWon(paid)} ·
-          비용 {formatWon(costSum)} · 이익{" "}
-          {formatWon(paid - costSum)}
-        </p>
+        {amounts ? (
+          <p className="mt-2 text-sm">
+            계약 {formatWon(project.contractAmount)} · 입금 {formatWon(project.payments.filter((payment) => payment.status === "PAID").reduce((sum, payment) => sum + payment.amount, 0))} ·
+            비용 {formatWon(project.costs.reduce((sum, cost) => sum + cost.amount, 0))} · 이익 {formatWon(project.payments.filter((payment) => payment.status === "PAID").reduce((sum, payment) => sum + payment.amount, 0) - project.costs.reduce((sum, cost) => sum + cost.amount, 0))}
+          </p>
+        ) : project.payments.length > 0 && (staff.role === "MANAGER" || staff.role === "ACCOUNTING") ? (
+          <p className="mt-2 text-sm">{openReceivable ? "미수 있음" : "미수 없음"}</p>
+        ) : null}
       </div>
 
       <section className="rounded-2xl border border-line bg-white p-4">
@@ -85,6 +87,7 @@ export default async function OsProjectDetailPage({ params }: Props) {
         </ul>
       </section>
 
+      {amounts ? (
       <section className="rounded-2xl border border-line bg-white p-4">
         <h2 className="font-semibold">입금</h2>
         <ul className="mt-3 space-y-2 text-sm">
@@ -101,6 +104,7 @@ export default async function OsProjectDetailPage({ params }: Props) {
           ))}
         </ul>
       </section>
+      ) : null}
     </div>
   );
 }

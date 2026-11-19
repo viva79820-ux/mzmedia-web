@@ -323,8 +323,106 @@ model Staff {
   contractsCreated Contract[]        @relation("ContractCreator")
   notifications    OsNotification[]
   filesUploaded    FileAsset[]       @relation("FileUploader")
+  workSlots        WorkSlot[]        @relation("WorkSlotAssignee")
+  workSlotsCreated WorkSlot[]        @relation("WorkSlotCreator")
+  inboxAssigned    InboxItem[]       @relation("InboxAssignee")
+  inboxCreated     InboxItem[]       @relation("InboxCreator")
+  draftsCreated    OfficeDraft[]     @relation("DraftCreator")
+  chatMessages     ChatMessage[]
+  customersAsPm    Customer[]        @relation("CustomerPm")
 
   @@index([role, active])
+}
+
+model WorkSlot {
+  id           String   @id @default(cuid())
+  customerName String
+  title        String
+  assigneeId   String
+  assignee     Staff    @relation("WorkSlotAssignee", fields: [assigneeId], references: [id], onDelete: Cascade)
+  createdById  String?
+  createdBy    Staff?   @relation("WorkSlotCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  inboxItemId  String?
+  inboxItem    InboxItem? @relation(fields: [inboxItemId], references: [id], onDelete: SetNull)
+  date         String
+  status       String   @default("배정됨")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([assigneeId, date])
+  @@index([date])
+  @@index([inboxItemId])
+}
+
+model InboxItem {
+  id             String     @id @default(cuid())
+  customerName   String
+  title          String
+  detail         String     @default("")
+  quantity       Int
+  doneCriteria   String     @default("")
+  month          String
+  driveUrl       String     @default("")
+  sourceSentence String     @default("")
+  kind           String     @default("업무")
+  reason         String     @default("")
+  status         String     @default("접수")
+  assigneeId     String?
+  assignee       Staff?     @relation("InboxAssignee", fields: [assigneeId], references: [id], onDelete: SetNull)
+  startDate      String     @default("")
+  createdById    String?
+  createdBy      Staff?     @relation("InboxCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  slots          WorkSlot[]
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  @@index([kind, status])
+  @@index([month])
+}
+
+model CustomerFolder {
+  id           String   @id @default(cuid())
+  customerName String   @unique
+  folderUrl    String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model OfficeDraft {
+  id           String   @id @default(cuid())
+  customerName String
+  kind         String
+  title        String
+  body         String
+  driveFileId  String   @default("")
+  driveUrl     String   @default("")
+  createdById  String?
+  createdBy    Staff?   @relation("DraftCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([customerName])
+}
+
+model ProjectRoom {
+  id           String        @id @default(cuid())
+  customerName String        @unique
+  createdAt    DateTime      @default(now())
+  messages     ChatMessage[]
+}
+
+model ChatMessage {
+  id             String      @id @default(cuid())
+  roomId         String
+  room           ProjectRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  authorId       String?
+  author         Staff?      @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  authorName     String
+  body           String
+  recordedItemId String      @default("")
+  createdAt      DateTime    @default(now())
+
+  @@index([roomId, createdAt])
 }
 
 model Customer {
@@ -334,6 +432,8 @@ model Customer {
   phone        String   @default("")
   email        String   @default("")
   memo         String   @default("")
+  pmId         String?
+  pm           Staff?   @relation("CustomerPm", fields: [pmId], references: [id], onDelete: SetNull)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
@@ -347,6 +447,7 @@ model Customer {
   @@index([companyName])
   @@index([phone])
   @@index([email])
+  @@index([pmId])
 }
 
 model Lead {
@@ -802,6 +903,7 @@ model OsNotification {
   body      String           @default("")
   href      String           @default("")
   readAt    DateTime?
+  emailSentAt DateTime?
   createdAt DateTime         @default(now())
 
   @@index([staffId, createdAt])

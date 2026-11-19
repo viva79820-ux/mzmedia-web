@@ -15,15 +15,20 @@ type StaffRow = {
   department?: string;
 };
 
+function localPart(email?: string) {
+  if (!email?.endsWith("@mzmedia.co.kr")) return "";
+  return email.slice(0, email.length - "@mzmedia.co.kr".length);
+}
+
 export function StaffBoard() {
   const [staff, setStaff] = useState<StaffRow[]>([]);
+  const [locals, setLocals] = useState<Record<string, string>>({});
   const [message, setMessage] = useState("");
   const [form, setForm] = useState({
-    username: "",
+    companyLocal: "",
     name: "",
     password: "",
     role: "EMPLOYEE",
-    email: "",
     department: "",
   });
 
@@ -33,7 +38,9 @@ export function StaffBoard() {
       setMessage("직원 목록을 불러올 권한이 없거나 실패했습니다.");
       return;
     }
-    setStaff(((await res.json()) as { staff: StaffRow[] }).staff);
+    const rows = ((await res.json()) as { staff: StaffRow[] }).staff;
+    setStaff(rows);
+    setLocals(Object.fromEntries(rows.map((row) => [row.id, localPart(row.email)])));
   }
 
   useEffect(() => {
@@ -52,33 +59,52 @@ export function StaffBoard() {
       setMessage(data.message ?? "등록 실패");
       return;
     }
-    setMessage("직원이 등록되었습니다.");
+    setMessage("직원이 등록되었습니다. 로그인은 회사 메일로 합니다.");
     setForm({
-      username: "",
+      companyLocal: "",
       name: "",
       password: "",
       role: "EMPLOYEE",
-      email: "",
       department: "",
     });
     await load();
   }
 
+  async function saveMail(row: StaffRow) {
+    const res = await fetch("/api/os/staff", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: row.id, companyLocal: locals[row.id] ?? "" }),
+    });
+    const data = (await res.json()) as { message?: string };
+    if (!res.ok) {
+      setMessage(data.message ?? "주소를 저장하지 못했습니다.");
+      return;
+    }
+    setMessage("회사 메일이 로그인 아이디로 저장되었습니다. 메일함은 워크스페이스에 그대로 둡니다.");
+    await load();
+  }
+
   async function toggleActive(row: StaffRow) {
-    await fetch("/api/os/staff", {
+    const res = await fetch("/api/os/staff", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id: row.id, active: !row.active }),
     });
+    if (!res.ok) {
+      setMessage("상태를 바꾸지 못했습니다.");
+      return;
+    }
+    setMessage(row.active ? "로그인을 막았습니다. 회사 메일 주소는 남아 있습니다." : "다시 로그인할 수 있습니다.");
     await load();
   }
 
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="text-2xl font-bold text-ink">직원 · 권한</h1>
+        <h1 className="text-2xl font-bold text-ink">직원 · 회사 메일</h1>
         <p className="mt-1 text-sm text-muted">
-          Staff 계정은 작업의뢰 회원(User)과 분리됩니다.
+          재직 중인 사람의 로그인 아이디는 사람마다 하나인 @mzmedia.co.kr 주소입니다. 메일함은 구글 워크스페이스에서 만들고, 오피스는 그 주소를 지우지 않습니다. 고객사 드라이브 권한도 이 주소로 줍니다.
         </p>
       </div>
 
@@ -88,18 +114,21 @@ export function StaffBoard() {
       >
         <input
           required
-          placeholder="아이디"
-          value={form.username}
-          onChange={(e) => setForm({ ...form, username: e.target.value })}
-          className="rounded-xl border border-line bg-paper px-3 py-2 text-sm"
-        />
-        <input
-          required
           placeholder="이름"
           value={form.name}
           onChange={(e) => setForm({ ...form, name: e.target.value })}
           className="rounded-xl border border-line bg-paper px-3 py-2 text-sm"
         />
+        <label className="flex items-center rounded-xl border border-line bg-paper px-3 py-2 text-sm">
+          <input
+            required
+            placeholder="name"
+            value={form.companyLocal}
+            onChange={(e) => setForm({ ...form, companyLocal: e.target.value })}
+            className="w-full bg-transparent outline-none"
+          />
+          <span className="shrink-0 text-muted">@mzmedia.co.kr</span>
+        </label>
         <input
           required
           type="password"
@@ -119,12 +148,6 @@ export function StaffBoard() {
             </option>
           ))}
         </select>
-        <input
-          placeholder="이메일"
-          value={form.email}
-          onChange={(e) => setForm({ ...form, email: e.target.value })}
-          className="rounded-xl border border-line bg-paper px-3 py-2 text-sm"
-        />
         <input
           placeholder="부서"
           value={form.department}
@@ -147,7 +170,7 @@ export function StaffBoard() {
           <thead className="border-b border-line bg-paper text-xs text-muted">
             <tr>
               <th className="px-3 py-2">이름</th>
-              <th className="px-3 py-2">아이디</th>
+              <th className="px-3 py-2">회사 메일</th>
               <th className="px-3 py-2">역할</th>
               <th className="px-3 py-2">상태</th>
               <th className="px-3 py-2" />
@@ -157,9 +180,25 @@ export function StaffBoard() {
             {staff.map((row) => (
               <tr key={row.id} className="border-b border-line/70">
                 <td className="px-3 py-2 font-medium">{row.name}</td>
-                <td className="px-3 py-2">@{row.username}</td>
+                <td className="px-3 py-2">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <input
+                      value={locals[row.id] ?? ""}
+                      onChange={(e) => setLocals({ ...locals, [row.id]: e.target.value })}
+                      placeholder="주소 앞부분"
+                      className="w-36 rounded-lg border border-line px-2 py-1"
+                    />
+                    <span className="text-muted">@mzmedia.co.kr</span>
+                    <button type="button" onClick={() => saveMail(row)} className="text-xs font-semibold text-accent">
+                      저장
+                    </button>
+                  </div>
+                  {row.username !== row.email ? (
+                    <p className="mt-1 text-xs text-muted">주소 저장 전 로그인: {row.username}</p>
+                  ) : null}
+                </td>
                 <td className="px-3 py-2">{STAFF_ROLE_LABEL[row.role]}</td>
-                <td className="px-3 py-2">{row.active ? "활성" : "비활성"}</td>
+                <td className="px-3 py-2">{row.active ? "재직" : "비활성"}</td>
                 <td className="px-3 py-2">
                   <button
                     type="button"

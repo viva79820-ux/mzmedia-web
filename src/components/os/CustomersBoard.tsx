@@ -15,6 +15,7 @@ type Customer = {
 
 export function CustomersBoard() {
   const [items, setItems] = useState<Customer[]>([]);
+  const [canCreate, setCanCreate] = useState(false);
   const [form, setForm] = useState({
     companyName: "",
     contactName: "",
@@ -27,8 +28,9 @@ export function CustomersBoard() {
   async function load() {
     const res = await fetch("/api/os/customers");
     if (!res.ok) return;
-    const data = (await res.json()) as { customers: Customer[] };
+    const data = (await res.json()) as { customers: Customer[]; canCreate?: boolean };
     setItems(data.customers);
+    setCanCreate(Boolean(data.canCreate));
   }
 
   useEffect(() => {
@@ -61,12 +63,13 @@ export function CustomersBoard() {
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="text-2xl font-bold text-ink">고객관리 CRM</h1>
+        <h1 className="text-2xl font-bold text-ink">고객사</h1>
         <p className="mt-1 text-sm text-muted">
-          고객별 리드·프로젝트 이력을 한곳에서 관리합니다.
+          맡은 고객사의 범위, 진행 업무, 드라이브 폴더를 엽니다. 금액은 이 화면에 없습니다.
         </p>
       </div>
 
+      {canCreate ? (
       <form
         onSubmit={createCustomer}
         className="grid gap-3 rounded-2xl border border-line bg-white p-4 md:grid-cols-2"
@@ -113,6 +116,7 @@ export function CustomersBoard() {
           {message && <p className="mt-2 text-sm text-muted">{message}</p>}
         </div>
       </form>
+      ) : null}
 
       <div className="overflow-x-auto rounded-2xl border border-line bg-white">
         <table className="min-w-full text-left text-sm">

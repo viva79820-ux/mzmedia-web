@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { canManageFinance, canSeeAllRecords } from "@/lib/os";
+import { canManageFinance } from "@/lib/os";
 import { requireStaff } from "@/lib/staff-auth";
 
 export const runtime = "nodejs";
@@ -19,17 +19,11 @@ function fail(error: unknown) {
 export async function GET(request: Request) {
   try {
     const staff = await requireStaff();
-    if (!canManageFinance(staff) && !canSeeAllRecords(staff)) {
-      // project members can see costs of their projects
-    }
+    if (!canManageFinance(staff)) throw new Error("FORBIDDEN");
     const url = new URL(request.url);
     const projectId = url.searchParams.get("projectId");
     const costs = await prisma.costItem.findMany({
-      where: projectId
-        ? { projectId }
-        : canSeeAllRecords(staff) || canManageFinance(staff)
-          ? undefined
-          : { project: { members: { some: { staffId: staff.id } } } },
+      where: projectId ? { projectId } : undefined,
       orderBy: { createdAt: "desc" },
       include: { project: { include: { customer: true } } },
       take: 400,
@@ -43,9 +37,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const staff = await requireStaff();
-    if (!canManageFinance(staff) && !canSeeAllRecords(staff)) {
-      throw new Error("FORBIDDEN");
-    }
+    if (!canManageFinance(staff)) throw new Error("FORBIDDEN");
     const body = (await request.json()) as Record<string, unknown>;
     const label = String(body.label ?? "").trim();
     if (!label) {

@@ -7,7 +7,7 @@ type Quote = {
   id: string;
   title: string;
   version: number;
-  amount: number;
+  amount?: number;
   status: keyof typeof QUOTE_STATUS_LABEL;
   validUntil: string;
   notes: string;
@@ -20,6 +20,7 @@ type Customer = { id: string; companyName: string };
 
 export function QuotesBoard() {
   const [quotes, setQuotes] = useState<Quote[]>([]);
+  const [amounts, setAmounts] = useState(false);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [form, setForm] = useState({
     customerId: "",
@@ -35,7 +36,11 @@ export function QuotesBoard() {
       fetch("/api/os/quotes"),
       fetch("/api/os/customers"),
     ]);
-    if (qRes.ok) setQuotes(((await qRes.json()) as { quotes: Quote[] }).quotes);
+    if (qRes.ok) {
+      const data = (await qRes.json()) as { quotes: Quote[]; canSeeAmounts?: boolean };
+      setQuotes(data.quotes);
+      setAmounts(Boolean(data.canSeeAmounts));
+    }
     if (cRes.ok) {
       const customers = ((await cRes.json()) as { customers: Customer[] })
         .customers;
@@ -56,10 +61,11 @@ export function QuotesBoard() {
     const res = await fetch("/api/os/quotes", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        ...form,
-        amount: Number(form.amount) || 0,
-      }),
+      body: JSON.stringify(
+        amounts
+          ? { ...form, amount: Number(form.amount) || 0 }
+          : { customerId: form.customerId, title: form.title, validUntil: form.validUntil, notes: form.notes },
+      ),
     });
     const data = (await res.json()) as { ok?: boolean; message?: string };
     if (!res.ok || !data.ok) {
@@ -121,12 +127,14 @@ export function QuotesBoard() {
           onChange={(e) => setForm({ ...form, title: e.target.value })}
           className="rounded-xl border border-line bg-paper px-3 py-2 text-sm"
         />
+        {amounts ? (
         <input
           placeholder="금액"
           value={form.amount}
           onChange={(e) => setForm({ ...form, amount: e.target.value })}
           className="rounded-xl border border-line bg-paper px-3 py-2 text-sm"
         />
+        ) : null}
         <input
           type="date"
           value={form.validUntil}
@@ -156,7 +164,7 @@ export function QuotesBoard() {
             <tr>
               <th className="px-3 py-2">견적</th>
               <th className="px-3 py-2">고객</th>
-              <th className="px-3 py-2">금액</th>
+              {amounts ? <th className="px-3 py-2">금액</th> : null}
               <th className="px-3 py-2">상태</th>
               <th className="px-3 py-2">버전</th>
               <th className="px-3 py-2" />
@@ -167,7 +175,7 @@ export function QuotesBoard() {
               <tr key={q.id} className="border-b border-line/70">
                 <td className="px-3 py-2 font-medium">{q.title}</td>
                 <td className="px-3 py-2">{q.customer.companyName}</td>
-                <td className="px-3 py-2">{formatWon(q.amount)}</td>
+                {amounts ? <td className="px-3 py-2">{formatWon(q.amount)}</td> : null}
                 <td className="px-3 py-2">
                   <select
                     value={q.status}

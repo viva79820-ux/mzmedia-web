@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import {
   canSeeAllRecords,
+  canSeeAmounts,
   formatWon,
   monthPrefix,
   todayKey,
@@ -148,20 +149,25 @@ export async function GET() {
       ? Math.round((revenue / monthlyGoal) * 1000) / 10
       : 0;
 
+    const showMoney = canSeeAmounts(staff);
     return NextResponse.json({
       ok: true,
       summary: {
         month,
-        revenue,
-        revenueLabel: formatWon(revenue),
-        monthlyGoal,
-        monthlyGoalLabel: formatWon(monthlyGoal),
-        goalRate,
-        newContractAmount: newContracts._sum.contractAmount ?? 0,
+        ...(showMoney
+          ? {
+              revenue,
+              revenueLabel: formatWon(revenue),
+              monthlyGoal,
+              monthlyGoalLabel: formatWon(monthlyGoal),
+              goalRate,
+              newContractAmount: newContracts._sum.contractAmount ?? 0,
+              expectedIncoming: plannedIncoming._sum.amount ?? 0,
+              overdueAmount: overduePayments._sum.amount ?? 0,
+              overdueCount: overduePayments._count,
+            }
+          : {}),
         newContractCount: newContracts._count,
-        expectedIncoming: plannedIncoming._sum.amount ?? 0,
-        overdueAmount: overduePayments._sum.amount ?? 0,
-        overdueCount: overduePayments._count,
         pipeline: {
           lead: stageMap.LEAD ?? 0,
           contact: stageMap.CONTACT ?? 0,

@@ -16,16 +16,20 @@ export async function POST(request: Request) {
       username?: string;
       password?: string;
     };
-    const username = body.username?.trim() ?? "";
+    const username = body.username?.trim().toLowerCase() ?? "";
     const password = body.password ?? "";
     if (!username || !password) {
       return NextResponse.json(
-        { ok: false, message: "아이디와 비밀번호를 입력해 주세요." },
+        { ok: false, message: "회사 메일과 비밀번호를 입력해 주세요." },
         { status: 400 },
       );
     }
 
-    const staff = await prisma.staff.findUnique({ where: { username } });
+    const staff = await prisma.staff.findFirst({
+      where: username.endsWith("@mzmedia.co.kr")
+        ? { OR: [{ username }, { email: username }] }
+        : { username },
+    });
     if (!staff || !staff.active) {
       return NextResponse.json(
         { ok: false, message: "계정을 확인할 수 없습니다." },
@@ -36,7 +40,7 @@ export async function POST(request: Request) {
     const ok = await verifyStaffPassword(password, staff.passwordHash);
     if (!ok) {
       return NextResponse.json(
-        { ok: false, message: "아이디 또는 비밀번호가 올바르지 않습니다." },
+        { ok: false, message: "회사 메일 또는 비밀번호가 올바르지 않습니다." },
         { status: 401 },
       );
     }

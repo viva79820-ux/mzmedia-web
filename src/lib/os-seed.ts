@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import { parseCompanyEmail } from "@/lib/company-mail";
 import { hashStaffPassword } from "@/lib/staff-auth";
 
 /** Ensure a SUPER_ADMIN exists (from env) so OS can be bootstrapped. */
@@ -16,6 +17,10 @@ export async function ensureSuperAdminSeeded() {
     process.env.OS_ADMIN_PASSWORD?.trim() ||
     process.env.ADMIN_PASSWORD?.trim() ||
     "";
+  const fromEnv = [process.env.OS_ADMIN_EMAIL, username]
+    .map((value) => parseCompanyEmail(value ?? ""))
+    .find((parsed) => parsed.ok);
+  const companyEmail = fromEnv && fromEnv.ok ? fromEnv.email : "";
 
   if (!password || password.length < 4) {
     throw new Error(
@@ -25,10 +30,10 @@ export async function ensureSuperAdminSeeded() {
 
   await prisma.staff.create({
     data: {
-      username,
+      username: companyEmail || username.trim().toLowerCase(),
       passwordHash: await hashStaffPassword(password),
       name: "대표",
-      email: process.env.OS_ADMIN_EMAIL?.trim() || "",
+      email: companyEmail,
       role: "SUPER_ADMIN",
       active: true,
       department: "경영",

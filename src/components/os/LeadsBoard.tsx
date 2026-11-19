@@ -12,7 +12,7 @@ type Lead = {
   title: string;
   stage: keyof typeof LEAD_STAGE_LABEL;
   source: keyof typeof LEAD_SOURCE_LABEL;
-  expectedAmount: number | null;
+  expectedAmount?: number | null;
   nextContactDate: string;
   desiredService: string;
   customer: { id: string; companyName: string; contactName: string; phone: string };
@@ -25,6 +25,7 @@ const STAGES = Object.keys(LEAD_STAGE_LABEL) as (keyof typeof LEAD_STAGE_LABEL)[
 
 export function LeadsBoard() {
   const [leads, setLeads] = useState<Lead[]>([]);
+  const [amounts, setAmounts] = useState(false);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [form, setForm] = useState({
     customerId: "",
@@ -41,8 +42,9 @@ export function LeadsBoard() {
       fetch("/api/os/customers"),
     ]);
     if (leadRes.ok) {
-      const data = (await leadRes.json()) as { leads: Lead[] };
+      const data = (await leadRes.json()) as { leads: Lead[]; canSeeAmounts?: boolean };
       setLeads(data.leads);
+      setAmounts(Boolean(data.canSeeAmounts));
     }
     if (custRes.ok) {
       const data = (await custRes.json()) as { customers: Customer[] };
@@ -74,13 +76,19 @@ export function LeadsBoard() {
     const res = await fetch("/api/os/leads", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        ...form,
-        expectedAmount:
-          form.expectedAmount.trim() === ""
-            ? null
-            : Number(form.expectedAmount),
-      }),
+      body: JSON.stringify(
+        amounts
+          ? {
+              ...form,
+              expectedAmount: form.expectedAmount.trim() === "" ? null : Number(form.expectedAmount),
+            }
+          : {
+              customerId: form.customerId,
+              title: form.title,
+              source: form.source,
+              desiredService: form.desiredService,
+            },
+      ),
     });
     const data = (await res.json()) as { ok?: boolean; message?: string };
     if (!res.ok || !data.ok) {
@@ -160,12 +168,14 @@ export function LeadsBoard() {
           onChange={(e) => setForm({ ...form, desiredService: e.target.value })}
           className="rounded-xl border border-line bg-paper px-3 py-2 text-sm"
         />
+        {amounts ? (
         <input
           placeholder="예상 계약금액"
           value={form.expectedAmount}
           onChange={(e) => setForm({ ...form, expectedAmount: e.target.value })}
           className="rounded-xl border border-line bg-paper px-3 py-2 text-sm"
         />
+        ) : null}
         <button
           type="submit"
           className="rounded-full bg-accent px-4 py-2 text-sm font-semibold text-white"
@@ -199,7 +209,7 @@ export function LeadsBoard() {
                     {LEAD_SOURCE_LABEL[lead.source]}
                   </p>
                   <p className="mt-1 text-xs">
-                    {formatWon(lead.expectedAmount)} ·{" "}
+                    {amounts ? `${formatWon(lead.expectedAmount)} · ` : ""}
                     {lead.owner?.name ?? "미배정"}
                   </p>
                   <select

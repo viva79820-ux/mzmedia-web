@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type { ProjectStatus } from "@/generated/prisma/client";
 import { prisma } from "@/lib/db";
-import { canSeeAllRecords, isFreelancer } from "@/lib/os";
+import { canSeeAllRecords, canSeeAmounts, isFreelancer } from "@/lib/os";
 import { requireStaff } from "@/lib/staff-auth";
 
 export const runtime = "nodejs";
@@ -45,7 +45,13 @@ export async function GET() {
       },
       take: 300,
     });
-    return NextResponse.json({ projects });
+    const visible = canSeeAmounts(staff);
+    return NextResponse.json({
+      canSeeAmounts: visible,
+      projects: visible
+        ? projects
+        : projects.map(({ contractAmount: _amount, ...rest }) => rest),
+    });
   } catch (error) {
     return fail(error);
   }
@@ -55,6 +61,9 @@ export async function POST(request: Request) {
   try {
     const staff = await requireStaff();
     const body = (await request.json()) as Record<string, unknown>;
+    if (!canSeeAmounts(staff) && body.contractAmount !== undefined) {
+      return NextResponse.json({ ok: false, message: "계약금액은 대표만 저장합니다." }, { status: 403 });
+    }
     const customerId = String(body.customerId ?? "");
     const name = String(body.name ?? "").trim();
     if (!customerId || !name) {

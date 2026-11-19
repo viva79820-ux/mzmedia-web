@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type { ProjectStatus } from "@/generated/prisma/client";
 import { prisma } from "@/lib/db";
+import { canSeeAmounts } from "@/lib/os";
 import { requireStaff } from "@/lib/staff-auth";
 
 export const runtime = "nodejs";
@@ -19,7 +20,7 @@ const STATUSES = new Set([
 
 export async function GET(_request: Request, ctx: Ctx) {
   try {
-    await requireStaff();
+    const staff = await requireStaff();
     const { id } = await ctx.params;
     const project = await prisma.project.findUnique({
       where: { id },
@@ -36,6 +37,10 @@ export async function GET(_request: Request, ctx: Ctx) {
       },
     });
     if (!project) return NextResponse.json({ ok: false }, { status: 404 });
+    if (!canSeeAmounts(staff)) {
+      const { contractAmount: _amount, payments: _payments, costs: _costs, ...rest } = project;
+      return NextResponse.json({ project: rest });
+    }
     return NextResponse.json({ project });
   } catch (error) {
     if (error instanceof Error && error.message === "UNAUTHORIZED") {
@@ -57,6 +62,9 @@ export async function PATCH(request: Request, ctx: Ctx) {
       data.status = String(body.status) as ProjectStatus;
     }
     if (body.contractAmount !== undefined) {
+      if (!canSeeAmounts(staff)) {
+        return NextResponse.json({ ok: false, message: "계약금액은 대표만 저장합니다." }, { status: 403 });
+      }
       data.contractAmount = Number(body.contractAmount) || 0;
     }
     if (body.startDate !== undefined) data.startDate = String(body.startDate);
