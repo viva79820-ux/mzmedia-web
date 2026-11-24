@@ -161,6 +161,10 @@ export async function POST(request: Request) {
   const staff = await getSessionStaff();
   if (!staff) return NextResponse.json({ text: "로그인이 필요합니다." }, { status: 401 });
   if (staff.role !== "SUPER_ADMIN") return NextResponse.json({ text: "대표 계정만 사용할 수 있습니다." }, { status: 403 });
+  if (request.headers.get("origin") !== new URL(request.url).origin ||
+      !/^application\/json(?:;|$)/i.test(request.headers.get("content-type") ?? "")) {
+    return NextResponse.json({ text: "ERP 화면에서 다시 제출해 주세요." }, { status: 403 });
+  }
   const body = await request.json().catch(() => null);
   if (!body) return answer("명령을 입력해 주세요.");
   try {
