@@ -54,6 +54,7 @@ export function OsShell({
 }: Props & { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
+  const commandHome = staff.role === "SUPER_ADMIN" && pathname === "/os";
 
   const visible = navItems.filter(
     (item) => !item.roles || item.roles.includes(staff.role),
@@ -67,7 +68,7 @@ export function OsShell({
 
   return (
     <div className="flex min-h-screen bg-[#f4f6f9] text-ink">
-      <aside className="hidden w-60 shrink-0 border-r border-line bg-white md:flex md:flex-col">
+      <aside className={commandHome ? "hidden" : "hidden w-60 shrink-0 border-r border-line bg-white md:flex md:flex-col"}>
         <div className="border-b border-line px-4 py-4">
           <p className="text-[10px] font-semibold tracking-[0.2em] text-muted uppercase">
             MZ MEDIA OS
@@ -75,6 +76,7 @@ export function OsShell({
           <p className="mt-1 text-sm font-semibold text-ink">통합 운영관리</p>
         </div>
         <nav className="flex-1 space-y-0.5 p-2">
+          {staff.role === "SUPER_ADMIN" && <Link href="/os" className="block rounded-lg px-3 py-2 text-sm font-semibold text-accent">업무 지시</Link>}
           {visible.map((item) => {
             const active =
               pathname === item.href || pathname.startsWith(`${item.href}/`);
@@ -115,7 +117,16 @@ export function OsShell({
               MZ MEDIA OS
             </p>
           </div>
-          <div className="flex max-w-[70%] flex-wrap gap-2 md:hidden">
+          {commandHome && (
+            <details className="relative mr-3 text-sm">
+              <summary className="cursor-pointer font-semibold text-ink">업무 메뉴</summary>
+              <nav aria-label="ERP 업무 메뉴" className="absolute left-0 z-20 mt-2 grid max-h-[65vh] w-56 gap-1 overflow-auto rounded-xl border border-line bg-white p-3 shadow-lg">
+                {visible.map(item => <Link key={item.href} href={item.href} className="rounded px-2 py-1 hover:bg-paper">{item.label}</Link>)}
+                <button type="button" className="px-2 py-1 text-left text-accent" onClick={logout}>로그아웃</button>
+              </nav>
+            </details>
+          )}
+          <div className={commandHome ? "hidden" : "flex max-w-[70%] flex-wrap gap-2 md:hidden"}>
             {visible.map((item) => (
               <Link
                 key={item.href}
