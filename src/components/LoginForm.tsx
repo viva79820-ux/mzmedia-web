@@ -5,10 +5,10 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { safeNext } from "@/lib/safe-next";
 
-export function LoginForm() {
+export function LoginForm({ staff = false }: { staff?: boolean }) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const next = safeNext(searchParams.get("next"), "/jobs");
+  const next = staff ? "/os" : safeNext(searchParams.get("next"), "/jobs");
   const forInquiry = next.startsWith("/inquiries");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -20,7 +20,7 @@ export function LoginForm() {
 
     const form = new FormData(event.currentTarget);
     try {
-      const res = await fetch("/api/auth/login", {
+      const res = await fetch(staff ? "/api/os/auth/login" : "/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -53,7 +53,7 @@ export function LoginForm() {
         </p>
       ) : null}
       <label className="block text-sm">
-        <span className="mb-2 block font-medium text-ink">아이디</span>
+        <span className="mb-2 block font-medium text-ink">{staff ? "회사 메일 또는 직원 아이디" : "아이디"}</span>
         <input
           required
           name="username"
@@ -86,12 +86,14 @@ export function LoginForm() {
         {loading ? "로그인 중…" : "로그인"}
       </button>
 
-      <Link
-        href={`/auth/signup?next=${encodeURIComponent(next)}`}
-        className="mt-3 flex w-full items-center justify-center rounded-full border border-line px-5 py-3.5 text-sm font-semibold text-ink transition hover:border-accent hover:text-accent"
-      >
-        회원가입
-      </Link>
+      {!staff && (
+        <Link
+          href={`/auth/signup?next=${encodeURIComponent(next)}`}
+          className="mt-3 flex w-full items-center justify-center rounded-full border border-line px-5 py-3.5 text-sm font-semibold text-ink transition hover:border-accent hover:text-accent"
+        >
+          회원가입
+        </Link>
+      )}
     </form>
   );
 }

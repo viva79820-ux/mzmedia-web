@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 
@@ -84,12 +83,6 @@ export function OsLoginForm() {
       >
         {loading ? "확인 중..." : "로그인"}
       </button>
-      <Link
-        href="/os/signup"
-        className="block w-full rounded-full border border-line px-4 py-3 text-center text-sm font-semibold text-ink"
-      >
-        회원가입
-      </Link>
     </form>
   );
 }
