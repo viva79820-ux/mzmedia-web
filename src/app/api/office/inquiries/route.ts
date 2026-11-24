@@ -1,21 +1,14 @@
 import { NextResponse } from "next/server";
-import { requireAdmin } from "@/lib/admin-auth";
+import { guardOffice } from "@/lib/office/guard";
 import { inquiryStatus, listInquiries, saveReply } from "@/lib/home/store";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-async function allowed() {
-  try {
-    await requireAdmin();
-    return true;
-  } catch {
-    return false;
-  }
-}
 
 export async function GET() {
-  if (!(await allowed())) return NextResponse.json({ error: "로그인이 필요합니다." }, { status: 401 });
+  const denied = await guardOffice({ prepareSchema: false });
+  if (denied) return denied;
   const rows = await listInquiries();
   return NextResponse.json({
     inquiries: rows.map((row) => ({
@@ -26,7 +19,8 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  if (!(await allowed())) return NextResponse.json({ error: "로그인이 필요합니다." }, { status: 401 });
+  const denied = await guardOffice({ prepareSchema: false });
+  if (denied) return denied;
   const body = (await request.json().catch(() => null)) as { id?: string; reply?: string } | null;
   const id = body?.id?.trim() ?? "";
   const reply = body?.reply?.trim() ?? "";

@@ -27,8 +27,10 @@ export function OsLoginForm() {
         setError(data.message ?? "로그인에 실패했습니다.");
         return;
       }
-      const requested = search.get("next") || "/os";
-      const next = requested === "/office" || requested === "/admin" ? "/os" : requested;
+      const requested = search.get("next") ?? "/os";
+      const next = /^\/(?:os|office)(?:\/[\w-]+)*\/?$/.test(requested)
+        ? requested
+        : "/os";
       router.replace(next);
       router.refresh();
     } catch {

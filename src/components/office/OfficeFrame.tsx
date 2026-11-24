@@ -35,8 +35,8 @@ export function OfficeFrame({ children }: { children: React.ReactNode }) {
   const router = useRouter();
 
   async function logout() {
-    await fetch("/api/admin/logout", { method: "POST" });
-    router.replace("/admin");
+    await fetch("/api/os/auth/logout", { method: "POST" });
+    router.replace("/os/login?next=%2Foffice");
     router.refresh();
   }
 

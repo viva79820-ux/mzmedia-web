@@ -1,28 +1,22 @@
 import { NextResponse } from "next/server";
-import { requireAdmin } from "@/lib/admin-auth";
+import { guardOffice } from "@/lib/office/guard";
 import { unsuitableStandard } from "@/lib/home/answer";
 import { listAsks, promoteStandards, saveApprovedAsk } from "@/lib/home/asks";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-async function allowed() {
-  try {
-    await requireAdmin();
-    return true;
-  } catch {
-    return false;
-  }
-}
 
 export async function GET() {
-  if (!(await allowed())) return NextResponse.json({ error: "로그인이 필요합니다." }, { status: 401 });
+  const denied = await guardOffice({ prepareSchema: false });
+  if (denied) return denied;
   const asks = await listAsks();
   return NextResponse.json({ asks });
 }
 
 export async function POST(request: Request) {
-  if (!(await allowed())) return NextResponse.json({ error: "로그인이 필요합니다." }, { status: 401 });
+  const denied = await guardOffice({ prepareSchema: false });
+  if (denied) return denied;
   const body = (await request.json().catch(() => null)) as { id?: string; approved?: string } | null;
   const id = body?.id?.trim() ?? "";
   const approved = body?.approved?.trim() ?? "";

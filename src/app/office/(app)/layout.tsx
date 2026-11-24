@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { OfficeFrame } from "@/components/office/OfficeFrame";
-import { isAdminAuthed } from "@/lib/admin-auth";
+import { headers } from "next/headers";
+import { canAccessOffice } from "@/lib/office/access";
+import { getSessionStaff } from "@/lib/staff-auth";
 import "../office.css";
 
 export const dynamic = "force-dynamic";
@@ -12,6 +14,11 @@ export const metadata: Metadata = {
 };
 
 export default async function OfficeLayout({ children }: { children: React.ReactNode }) {
-  if (!(await isAdminAuthed())) redirect("/admin");
+  const staff = await getSessionStaff();
+  if (!staff) {
+    const pathname = (await headers()).get("x-pathname") || "/office";
+    redirect("/os/login?" + new URLSearchParams({ next: pathname }));
+  }
+  if (!canAccessOffice(staff.role)) redirect("/os");
   return <OfficeFrame>{children}</OfficeFrame>;
 }

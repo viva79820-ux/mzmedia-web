@@ -12,7 +12,8 @@ export function middleware(request: NextRequest) {
     !pathname.startsWith("/os/signup") &&
     !pathname.startsWith("/api/");
 
-  if (isOsPage) {
+  const isOfficePage = pathname === "/office" || pathname.startsWith("/office/");
+  if (isOsPage || isOfficePage) {
     const token = request.cookies.get("mz_staff")?.value;
     if (!token) {
       const login = new URL("/os/login", request.url);
