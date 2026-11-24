@@ -86,7 +86,22 @@ export function LoginForm({ staff = false }: { staff?: boolean }) {
         {loading ? "로그인 중…" : "로그인"}
       </button>
 
-      {!staff && (
+      {staff ? (
+        <div className="mt-3 grid gap-2">
+          <Link
+            href="/admin/account?request=signup"
+            className="flex w-full items-center justify-center rounded-full border border-line px-5 py-3.5 text-sm font-semibold text-ink transition hover:border-accent hover:text-accent"
+          >
+            회원가입
+          </Link>
+          <Link
+            href="/admin/account?request=recovery"
+            className="flex w-full items-center justify-center rounded-full border border-line px-5 py-3.5 text-sm font-semibold text-ink transition hover:border-accent hover:text-accent"
+          >
+            아이디/비번 잊어버리셨다면?
+          </Link>
+        </div>
+      ) : (
         <Link
           href={`/auth/signup?next=${encodeURIComponent(next)}`}
           className="mt-3 flex w-full items-center justify-center rounded-full border border-line px-5 py-3.5 text-sm font-semibold text-ink transition hover:border-accent hover:text-accent"
